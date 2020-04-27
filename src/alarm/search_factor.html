@@ -1,0 +1,249 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>报警条件选择</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/alarm/search_factor.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.picker.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.poppicker.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">报警条件选择</h1>
+		</header>
+		<div id="app">
+			<form class="mui-input-group">
+				<div class="mui-input-row" >
+					<label>企业名称</label>
+					<span class="mui-icon mui-pull-right mui-icon-bars mui-pull-center" id="companyname" style="padding-top: 10px; width: 20%;" ></span>
+					<input type="text" style="height: 60px;  width: 45%;" disabled="disabled" v-model="compamy" placeholder="请选择企业名称">
+				</div>
+				<div class="mui-input-row">
+					<label>报警开始日期</label>
+					<span class="mui-icon mui-pull-right mui-icon-list mui-pull-center" id="pickdata" style="padding-top: 10px; width: 20%;" ></span>
+					<input type="text" style="height: 60px; width: 45%;" v-model="date" disabled="disabled" placeholder="请选择报警日期">
+
+				</div>
+				<div class="mui-input-row">
+					<label>报警结束日期</label>
+					<span class="mui-icon mui-pull-right mui-icon-list mui-pull-center" id="endpickdata" style="padding-top: 10px; width: 20%;"></span>
+					<input type="text" style="height: 60px; width: 45%;" v-model="enddate" disabled="disabled" placeholder="请选择报警日期">
+				
+				</div>
+				<div class="mui-input-row" id="alarm_type">
+					<label>报警类型</label>
+					<span class="mui-icon mui-pull-right mui-icon-bars mui-pull-center" id="alarm_type" style="padding-top: 10px; width: 20%;" ></span>
+					<input type="text" style="height: 60px;width: 45%;" v-model="alarm_type" disabled="disabled" placeholder="请选择报警类型">
+				</div>
+				
+			</form>
+			<div class="flex">
+				<button type="button" class="mui-btn btn" id="search" @click="search()">搜索</button>
+				<button type="button" class="mui-btn  btn_" id="clear">清空</button>
+			</div>
+
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mui.poppicker.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: true //关闭back按键监听
+				},
+				beforeback: function() {
+					var ws= plus.webview.currentWebview();
+					plus.webview.close(ws)
+				}
+			})
+			var app = new Vue({
+				el: "#app",
+				data: {
+					date: '',
+					alarm_type: "",
+					compamy:"",
+					alarmType_list:[],
+					company_list:[],
+					enddate:"",
+					pickcompanylist:[],
+					cnames:""
+				},
+				methods:{
+					search:function(){
+						if(app.alarm_type == "" && app.date == "" && app.compamy == "" && app.enddate == ""){
+							mui.toast('请输入搜索条件')
+						}else{
+							getconmpany();
+						}
+					}
+				}
+			})
+
+			mui.plusReady(function() {
+				init();
+				initType(); 
+				btn_type();
+				getcompanylist();
+			})
+			//报警日期
+			function init() {
+				var pickdata = document.getElementById("pickdata");
+				var endpickdata = document.getElementById("endpickdata");
+				// var d = new Date();
+				var now = new Date();
+				var year = now.getFullYear(); //得到年份
+				var month = now.getMonth() + 1 < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1); //得到月份
+				var date = now.getDate() < 10 ? "0" + now.getDate() : now.getDate(); //得到日期		
+				app.date = year + '-' + month + '-' + date;
+				app.enddate = year + '-' + month + '-' + date;
+				/* if (d.getDate() < 9) {
+					app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + "0" + d.getDate();
+				} else {
+					app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+				}
+				if (d.getDate() < 9) {
+					 app.enddate = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + "0" + d.getDate();
+				} else {
+					 app.enddate = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+				} */
+				pickdata.addEventListener("tap", function() {
+					plus.nativeUI.pickDate(function(e) {
+						var now = e.date;
+						var year = now.getFullYear(); //得到年份
+						var month = now.getMonth() + 1 < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1); //得到月份
+						var date = now.getDate() < 10 ? "0" + now.getDate() : now.getDate(); //得到日期		
+						app.date = year + '-' + month + '-' + date;
+					}, function(e) {
+
+					});
+				})
+				endpickdata.addEventListener("tap", function() {
+					plus.nativeUI.pickDate(function(e) {
+						var now = e.date;
+						var year = now.getFullYear(); //得到年份
+						var month = now.getMonth() + 1 < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1); //得到月份
+						var date = now.getDate() < 10 ? "0" + now.getDate() : now.getDate(); //得到日期		
+						app.enddate = year + '-' + month + '-' + date;
+					}, function(e) {
+				
+					});
+				})
+			}
+
+			
+			//报警类型
+			function initType() {
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/twarnsubscribe/queryEventTypeDictionary',{
+					data:{
+						userId:localStorage.getItem("userId")
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(res){
+						// console.log(JSON.stringify(res));
+						if(res.code == 0){
+							for(var i = 0;i<res.data.length;i++){
+								var obj ={};
+								obj.text = res.data[i].eventType;
+								obj.value = res.data[i].eventTypeId;
+								app.alarmType_list.push(obj);
+							}
+						}else{
+							mui.toast(res.msg);
+						}
+						
+					},
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+				var alarm_type = document.getElementById("alarm_type");
+				alarm_type.addEventListener("tap", function() {
+					var picker = new mui.PopPicker();
+					picker.setData(
+						app.alarmType_list
+					);
+					picker.show(function(selectItems) {
+						app.alarm_type = selectItems[0].text; //智子 
+						console.log(selectItems[0].text);
+					})
+				}, {
+					passive: false
+				})
+			}
+			
+			function btn_type(){
+				var clear = document.getElementById("clear");
+				clear.addEventListener("tap",function(){
+					app.date = ""
+					app.alarm_type = "";
+					app.compamy = "",
+					app.enddate = ""
+				},{passive:false})
+			}
+			
+			
+			function getconmpany() {
+				var alarm = plus.webview.getWebviewById("alarm");
+				mui.fire(alarm, 'get_data',{
+					name:app.compamy,
+					date:app.date,
+					type:app.alarm_type,
+					end:app.enddate
+				});
+				mui.back();
+			}
+			
+			function getcompanylist(){
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/tbasenterprise/list?limit=10000',{
+					data:{
+						userId: localStorage.getItem("userId")
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(res){
+						if(res.code == 0){
+							for(var i=0;i<res.page.list.length;i++){
+								var obj ={};
+								obj.text = res.page.list[i].name;
+								// obj.value = res.data[i].eventTypeId;
+								app.pickcompanylist.push(obj);
+							}
+						}
+					},
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+				var companyname = document.getElementById("companyname");
+				companyname.addEventListener("tap", function() {
+					var picker = new mui.PopPicker();
+					picker.setData(
+						app.pickcompanylist
+					);
+					picker.show(function(selectItems) {
+						app.compamy = selectItems[0].text; //智子 
+						console.log(app.compamy);
+					})
+				}, {
+					passive: false
+				})
+			}
+			
+			
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>查询</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/production/searchDate.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.picker.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.poppicker.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">查询</h1>
+		</header>
+		<div id="app">
+			<form class="mui-input-group">
+				<div class="mui-input-row">
+					<label>企业名称</label>
+					<input type="text" id="company" style="height: 60px;" v-model="compamy" class="mui-input-clear" placeholder="请输入企业名称">
+				</div>
+				<!-- <div class="mui-input-row">
+					<label>开始日期</label>
+					<span class="mui-icon mui-pull-right mui-icon-list mui-pull-center" id="startDate" style="padding-top: 10px; width: 20%;"
+					 id="searchFactor"></span>
+					<input type="text" style="height: 60px; width: 45%;" v-model="start_date" disabled="disabled" placeholder="请选择开始日期">
+
+				</div>
+				<div class="mui-input-row" id="alarm_type">
+					<label>结束日期</label>
+					<span class="mui-icon mui-pull-right mui-icon-list mui-pull-center" id="endDate" style="padding-top: 10px; width: 20%;"
+					 id="searchFactor"></span>
+					<input type="text" style="height: 60px;width: 45%;" v-model="end_date" disabled="disabled" placeholder="请选择结束日期">
+				</div> -->
+				<!-- <div class="mui-input-row">
+					<label>行政区域</label>
+					<!-- <span class="mui-icon mui-pull-right mui-icon-list mui-pull-center" id="pickdata" style="padding-top: 10px; width: 20%;" id="searchFactor"></span> -->
+				<!-- <input type="text" style="height: 60px;" v-model="area" id="area" readonly="readonly" placeholder="请选择行政区域"> -->
+
+				<!-- </div> -->
+				<!-- <div class="mui-input-row">
+					<label>行业</label>
+					<!-- <span class="mui-icon mui-pull-right mui-icon-bars mui-pull-center" id="alarm_type" style="padding-top: 10px; width: 20%;" id="searchFactor"></span> -->
+				<!-- <input type="text" style="height: 60px;" v-model="trade" id="trade" placeholder="请选择行业类型"> -->
+				<!-- </div> -->
+			</form>
+			<div class="flex">
+				<button type="button" class="mui-btn btn" id="search" @click="search()">搜索</button>
+				<button type="button" class="mui-btn  btn_" id="clear">清空</button>
+			</div>
+		</div>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mui.poppicker.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: false //关闭back按键监听
+				},
+				beforeback: function() {
+					var ws = plus.webview.currentWebview();
+					plus.webview.close(ws)
+				}
+			})
+			var app = new Vue({
+				el: "#app",
+				data: {
+					end_date: '',
+					compamy: " ",
+					start_date: "",
+					area: "",
+					trade: "",
+					trade_list: [],
+					company_list: []
+				},
+				methods: {
+					search: function() {
+						if (app.compamy == "") {
+							mui.toast('请选择条件在搜索')
+						} else {
+							data_search();
+						}
+					}
+				}
+			})
+
+			mui.plusReady(function() {
+				init();
+				btn_type();
+			})
+			//报警日期
+			function init() {
+				var area = document.getElementById("area"); //行政区域
+				var trade = document.getElementById("trade"); //行业
+				var company = document.getElementById("company").value; //开始时间
+			}
+			
+			//按钮的类型(清除还是搜索)
+			function btn_type() {
+				var clear = document.getElementById("clear");
+				clear.addEventListener("tap", function() {
+					app.compamy = "";
+				}, {
+					passive: false
+				})
+			}
+			//根据日期搜索公司数据
+			function data_search() {
+				var production = plus.webview.getWebviewById("production");
+				mui.fire(production, 'get_data', {
+					startdate: app.start_date,
+					enddate: app.end_date
+				});
+				mui.back();
+				
+			}
+
+
+
+
+			// area.addEventListener("tap", function() {
+			// 	var picker = new mui.PopPicker();
+			// 	picker.setData([{
+			// 		value: "first",
+			// 		text: "陕西环保局"
+			// 	}, {
+			// 		value: "second",
+			// 		text: "北京环保局"
+			// 	}, {
+			// 		value: "third",
+			// 		text: "河南环保局"
+			// 	}, {
+			// 		value: "fourth",
+			// 		text: "山东环保局"
+			// 	}, {
+			// 		value: "fifth",
+			// 		text: "渭南环保局"
+			// 	}]);
+			// 	picker.show(function(selectItems) {
+			// 		app.area = selectItems[0].text
+			// 		console.log(selectItems[0].value); //zz 
+			// 	})
+			// }, {
+			// 	passive: false
+			// })
+			// trade.addEventListener("tap", function() {
+			// 	var picker = new mui.PopPicker();
+			// 	picker.setData(
+			// 		app.trade_list
+			// 	);
+			// 	picker.show(function(selectItems) {
+			// 		app.trade = selectItems[0].text
+			// 		// console.log(selectItems[0].text); //智子
+			// 		console.log(selectItems[0].value); //zz 
+			// 	})
+			// }, {
+			// 	passive: false
+			// })
+		</script>
+	</body>
+
+</html>

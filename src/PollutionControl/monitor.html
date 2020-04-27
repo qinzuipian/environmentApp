@@ -1,0 +1,396 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>企业监控</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/PollutionControl/monitor.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<a style="padding-top: 10px;" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">企业监控</h1>
+			<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="padding-top: 3px;" id="searchFactor"></span> -->
+		</header>
+		<div id="app">
+			
+			<!-- <p style="margin-top: 100px ; text-align: center;" v-show="All_length == 0 && isInternet == 1">暂无数据</p> -->
+			<div class="banner" v-show="isInternet == 1">
+				<p class="name" v-text="conmpanyname"></p>
+				<div class="flex total">
+					<div class="bar">
+						<p>产污设施数量</p>
+						<p v-text="productMonitorNum"></p>
+					</div>
+					<div class="bar">
+						<p>治污设施数量</p>
+						<p v-text="treatMonitorNum"></p>
+					</div>
+				</div>
+			</div>
+			<div class="chart" v-show="isInternet == 1">
+				<p>功率</p>
+				<div style="width:92%;height: 200px" id="Pbotchart"></div>
+			</div>
+			<div class="chart" v-show="isInternet == 1">
+				<p>企业总用电</p>
+				<div style="width:92%;height: 200px" id="Abotchart"></div>
+			</div>
+			<!-- <div class="chart">
+				<p>产污设施运行情况</p>
+				<div style="width:92%;height: 200px" id="Sbotchart"></div>
+			</div> -->
+			<div v-show="isInternet == 0">
+				<p class="tipword">没有网络了！可能是您的网络设置未开启</p>
+				<button type="button" id="refresh" class="mui-btn mui-btn-warning tipbtn" @click="tryAgain()">点击重试</button>
+			</div>
+		</div>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/echarts.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: true //关闭back按键监听
+				},
+				pullRefresh: {
+					container: "#app", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+					down: {
+						style: 'circle', //必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
+						color: '#2BD009', //可选，默认“#2BD009” 下拉刷新控件颜色
+						height: '50px', //可选,默认50px.下拉刷新控件的高度,
+						range: '0px', //可选 默认100px,控件可下拉拖拽的范围
+						offset: '0px', //可选 默认0px,下拉刷新控件的起始位置
+						auto: false, //可选,默认false.首次加载自动上拉刷新一次
+						callback: function() { //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+						getdeviceStatus();
+							mui('#app').pullRefresh().endPulldownToRefresh(false);
+						}
+					}
+				}
+			})
+
+			var app = new Vue({
+				el: "#app",
+				data: {
+					allmonitorid: "",
+					date: "",
+					kw_listx: [],
+					kw_listy: [],
+					power_listx: [],
+					power_listy: [],
+					companyid:"",
+					conmpanyname:"",
+					treatMonitorNum:"",
+					productMonitorNum:"",
+					isInternet:1
+					
+					
+				},
+				methods:{
+					tryAgain: function() {
+						getdeviceStatus();
+					
+					}
+				}
+			})
+
+			mui.plusReady(function() {
+				var allmonitorid = plus.webview.currentWebview();
+				app.allmonitorid = allmonitorid.allmonitorid
+				app.companyid = allmonitorid.conpanyid
+				//获取网络状况
+				getdeviceStatus()
+			})
+			//功率总用电
+			function kwchart() {
+				var pechart = echarts.init(document.getElementById('Pbotchart'));
+				option = {
+					tooltip: {
+						trigger: 'axis'
+					},
+					legend: {
+						data: ['今日', '昨日'],
+						right: "20px",
+						top: '0px'
+					},
+					grid: {
+						left: '3%',
+						right: '4%',
+						bottom: '4%',
+						top: '30px',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						data: app.kw_listx
+					},
+					yAxis: {
+						type: 'value'
+					},
+					series: [{
+							type: 'line',
+							data: app.kw_listy
+						}
+						
+					]
+				};
+				pechart.setOption(option);
+			}
+			//企业总用电
+			function powerchart() {
+				var aechart = echarts.init(document.getElementById('Abotchart'));
+				option = {
+					tooltip: {
+						trigger: 'axis'
+					},
+					legend: {
+						data: ['今日', '昨日'],
+						right: "20px",
+						top: '0px'
+					},
+					grid: {
+						left: '3%',
+						right: '4%',
+						bottom: '4%',
+						top: '30px',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						data: app.power_listx
+					},
+					yAxis: {
+						type: 'value'
+					},
+					series: [{
+							type: 'line',
+							data: app.power_listy
+						}
+						
+					]
+				};
+				aechart.setOption(option);
+			}
+
+
+			//获取监测点的功率曲线
+			function getmonitordate() {
+				app.kw_listx = []
+				app.kw_listy = []
+				console.log(app.allmonitorid);
+				mui.ajax(JTURL + '/environmental_intelligent_monitoring/tdevicehistory/queryMonitoringPowerCurve', {
+					data: {
+						flag: "2",
+						actTime: app.date,
+						monitorId: app.allmonitorid,
+						userId:localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if (res.code == 0) {
+							if (res.data != "") {
+								app.kw_listy =res.data.mapy.y;
+								app.kw_listx =res.data.mapx.x;
+							} else if (res.data == "") {
+								app.kw_listx = []
+								app.kw_listy = []
+							}
+							kwchart();
+						} else {
+							mui.toast(res.mag)
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+
+					}
+				});
+			}
+
+			function powers() {
+				app.power_listx = []
+				app.power_listy = []
+				mui.ajax(JTURL + '/environmental_intelligent_monitoring/tkwhhour/queryCycleEle', {
+					data: {
+						flag: "2",
+						actTime: app.date,
+						monitorId: app.allmonitorid,
+						userId:localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if (res.code == 0) {
+							if (res.data != "") {
+								app.power_listy = res.data.mapy.y;
+								app.power_listx = res.data.mapx.x;
+							} else if (res.data == "") {
+								app.power_listx = []
+								app.power_listy = []
+							}
+							powerchart();
+						} else {
+							mui.toast(res.mag)
+						}
+
+					},
+					error: function(xhr, type, errorThrown) {
+
+					}
+				});
+			}
+
+			function conpanyinfo(){
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/dataMonitor/queryEnterpriseReportList',{
+					data:{
+						enterpriseId: app.companyid,
+						userId:localStorage.getItem("userId")
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(res){
+						plus.nativeUI.closeWaiting();
+						console.log(JSON.stringify(res));
+						if(res.code == 0){
+							for (var i = 0; i < res.page.list.length; i++) {
+								app.conmpanyname = res.page.list[i].enterpriseName;
+								app.productMonitorNum = res.page.list[i].productMonitorNum
+								app.treatMonitorNum = res.page.list[i].treatMonitorNum
+							}
+						}
+						
+					},
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+			}
+			
+			function getdeviceStatus() {
+				var types = {};
+				//未知网络
+				types[plus.networkinfo.CONNECTION_UNKNOW] = "Unknown connection";
+				//无网络
+				types[plus.networkinfo.CONNECTION_NONE] = "None connection";
+				//以太网
+				types[plus.networkinfo.CONNECTION_ETHERNET] = "Ethernet connection";
+				//wifi
+				types[plus.networkinfo.CONNECTION_WIFI] = "WiFi connection";
+			
+				//wifi连接
+				if (types[plus.networkinfo.getCurrentType()] == types[plus.networkinfo.CONNECTION_NONE] || types[plus.networkinfo.getCurrentType()] ==
+					types[plus.networkinfo.CONNECTION_UNKNOW]) {
+					// 无网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					setTimeout(function() {
+						plus.nativeUI.closeWaiting();
+						app.isInternet = 0
+					}, 3000)
+			
+				} else {
+					// 有网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					app.isInternet = 1;
+					conpanyinfo();
+					var d = new Date();
+					// app.date = day1.getFullYear() + "-" + (day1.getMonth() + 1) + "-" + day1.getDate();
+					if (d.getDate() < 9) {
+						app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + "0" + d.getDate();
+					} else {
+						app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+					}
+					getmonitordate();
+					powers();
+			
+				}
+			}
+
+
+
+			// function conditionchart(){
+			// 	//产污设施运行情况
+			// 	var sechart = echarts.init(document.getElementById('Sbotchart'));
+			// 	option = {
+			// 	    tooltip: {
+			// 	        trigger: 'axis',
+			// 	        axisPointer: {
+			// 	            type: 'cross',
+			// 	            crossStyle: {
+			// 	                color: '#999'
+			// 	            }
+			// 	        }
+			// 	    },
+
+			// 	    legend: {
+			// 	        data:['蒸发量','降水量','平均温度']
+			// 	    },
+			// 	    xAxis: [
+			// 	        {
+			// 	            type: 'category',
+			// 	            data: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+			// 	            axisPointer: {
+			// 	                type: 'shadow'
+			// 	            }
+			// 	        }
+			// 	    ],
+			// 	    yAxis: [
+			// 	        {
+			// 	            type: 'value',
+			// 	            name: '水量',
+			// 	            axisLabel: {
+			// 	                formatter: '{value} ml'
+			// 	            }
+			// 	        },
+			// 	        {
+			// 	            type: 'value',
+			// 	            name: '温度',
+			// 	            min: 0,
+			// 	            max: 25,
+			// 	            interval: 5,
+			// 	            axisLabel: {
+			// 	                formatter: '{value} °C'
+			// 	            }
+			// 	        }
+			// 	    ],
+			// 	    series: [
+			// 	        {
+			// 	            name:'蒸发量',
+			// 	            type:'bar',
+			// 	            data:[2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3]
+			// 	        },
+			// 	        {
+			// 	            name:'降水量',
+			// 	            type:'bar',
+			// 	            data:[2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3]
+			// 	        },
+			// 	        {
+			// 	            name:'平均温度',
+			// 	            type:'line',
+			// 	            yAxisIndex: 1,
+			// 	            data:[2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
+			// 	        }
+			// 	    ]
+			// 	};
+
+			// 	sechart.setOption(option);
+			// }
+		</script>
+	</body>
+
+</html>

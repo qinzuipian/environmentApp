@@ -1,0 +1,66 @@
+@charset "utf-8";
+
+.name {
+	margin-left: 6px;
+	color: #000000;
+	font-size: 16px;
+}
+
+.index_ {
+	margin-left: 10px;
+	color: #000000;
+	font-size: 15px;
+	margin-right: 10px;
+}
+
+.time {
+	/* margin-right: 26px; */
+	margin-left: 2.375rem;
+}
+
+.times {
+	color: green;
+	font-size: 14px;
+}
+
+.type p {
+	color: gray;
+	font-size: 14px;
+}
+
+.company {
+	width: 95%;
+	margin-left: 2.5%;
+	/* margin-top: 50px; */
+	padding-top: 0.625rem;
+	background: white;
+	border: 0.5px solid gainsboro;
+	border-radius: 4px;
+	margin-bottom: 6px;
+}
+
+.mui-btn {
+	line-height: 10px;
+	font-size: 12px;
+	margin-top: 10px;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+.status {
+	color: red;
+	margin-right: 20px;
+	line-height: 20px;
+	font-size: 14px;
+}
+.center {
+	justify-content: space-between;
+	border-bottom: 1px solid gainsboro;
+	padding-bottom: 10px;
+}
+.reson{
+	width: 65px;
+} 
+.reason_{
+	width: calc(70% - 65px);
+}

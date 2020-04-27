@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>个人中心</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/own/own.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<h1 class="mui-title">我的</h1>
+		</header>
+		<div id="app">
+			<div class="bar">
+				<div class="flex">
+					<img src="../../img/doc___.jpg" class="pic">
+					<p class="name">环保助手</p>
+				</div>
+			</div>
+			<div style="margin-top: 10px;">
+				<ul class="mui-table-view" style="line-height: 30px;">
+					<li class="mui-table-view-cell" id="czsm">
+						<a class="mui-navigate-right">
+							<div class="flex">
+								<p class="left">操作说明</p>
+								<p class="right mui-text-right"></p>
+							</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell" >
+						<a class="mui-navigate-right" id="update">
+							<div class="flex">
+								<p class="left">版本升级</p>
+								<p class="right mui-text-right">v1.0</p>
+							</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell" id="pwd">
+						<a class="mui-navigate-right">
+							<div class="flex">
+								<p class="left">修改密码</p>
+								<p class="right mui-text-right"></p>
+							</div>
+						</a>
+					</li>
+				</ul>
+			</div>
+			<button type="button " class="mui-btn  btn" id="outlogin">退出登录</button>
+
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: false //关闭back按键监听
+				},
+				pullRefresh: {
+					container: "#app", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+					down: {
+						style: 'circle', //必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
+						color: '#2BD009', //可选，默认“#2BD009” 下拉刷新控件颜色
+						height: '50px', //可选,默认50px.下拉刷新控件的高度,
+						range: '100px', //可选 默认100px,控件可下拉拖拽的范围
+						offset: '0px', //可选 默认0px,下拉刷新控件的起始位置
+						auto: false, //可选,默认false.首次加载自动上拉刷新一次
+						callback: function() { //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+							var ws = plus.webview.currentWebview();
+							ws.reload();
+							mui('#app').pullRefresh().endPulldownToRefresh(false);
+						}
+					}
+				}
+			})
+			mui.plusReady(function() {
+				var pwd = document.getElementById("pwd");
+				var token = localStorage.getItem("token");
+				var outlogin = document.getElementById("outlogin");
+				var update = document.getElementById("update");
+				var czsm = document.getElementById("czsm");
+				czsm.addEventListener("tap",function(){
+					var operation = plus.webview.create("./operation.html","operation");
+					plus.webview.show(operation,"slide-in-right",300);
+				},{passive:false})
+				
+				outlogin.addEventListener("tap", function() {
+					plus.nativeUI.confirm("是否确定要退出登录?", function(e){
+							if(e.index == 0){
+								logout(token);
+							}
+						});
+				})
+				pwd.addEventListener("tap",function(){
+					var changepwd = plus.webview.create("./changepwd.html","changepwd");
+					plus.webview.show(changepwd,"slide-in-right",300);
+				},{passive:false})
+				update.addEventListener("tap",function(){
+					updates();
+				})
+			})
+			//退出登录的接口
+			function logout(token) {
+				plus.nativeUI.showWaiting("退出登录中...");
+				mui.ajax(JTURL + '/sys-mgr/sys/logout', {
+					data: {
+						token: token,
+						userId:localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						if (res.code == 0) {
+							window.localStorage.removeItem("token");
+							window.localStorage.removeItem("userId");
+							var login = plus.webview.create("../login/login.html");
+							plus.webview.show(login, "slide-in-right", 300);
+							// var ws= plus.webview.currentWebview();
+							// plus.webview.show(ws,"slide-in-left",300);
+							// reloadIndex();
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+
+					}
+				});
+			}
+			window.addEventListener("refresh", function() {
+				console.log("own刷新了");
+				own = plus.webview.getWebviewById("own");
+				// own.show();
+				var ws = plus.webview.currentWebview();
+				ws.reload();
+			}, {
+				passive: false
+			});
+		
+			
+			function updates(){
+				mui.ajax('https://www.pgyer.com/apiv2/app/check',{
+					data:{
+						_api_key:"5b9504506688ce11ca1886f20a9aa96f",
+						appKey:"0b52a900d934a06067e0beae903b4fac"
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(res){
+						console.log(JSON.stringify(res));
+						if(res.code == 0){
+							if(res.data.buildVersion != plus.runtime.version){
+								// document.getElementById("update").setAttribute("download",res.data.downloadURL)
+								// document.getElementById("update").getAttribute("download")
+								window.location.href = res.data.downloadURL;
+								// window.open()
+							}else{
+								mui.toast('已经是最新版本')
+							}
+						}
+					},
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+			}
+		
+		
+		</script>
+	</body>
+
+</html>

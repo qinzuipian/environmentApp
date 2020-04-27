@@ -1,0 +1,266 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>产污设施监控</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/PollutionControl/pollutionMonitor.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<a style="padding-top: 10px;" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">产污设施监控</h1>
+			<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="padding-top: 3px;" id="searchFactor"></span> -->
+		</header>
+		<div id="app">
+			
+			<!-- <p style="margin-top: 100px ; text-align: center;" v-show="All_length == 0 && isInternet == 1">暂无数据</p> -->
+			<p class="name" v-text="enterpeisename" v-show="isInternet == 1"></p>
+			<div class="bar" v-show="isInternet == 1">
+				<p class="monitor">监测点详情</p>
+				<div class="flex makepollution">
+					<p class="deco"></p>
+					<p>产污设施监测点：</p>
+					<p class="num" v-text="ctotal"></p>
+					<p>个</p>
+				</div>
+				<div class="flex item mui-input-row mui-radio mui-right" v-for="(it,index) in cmonitor">
+					<p v-text="it.title"></p>
+					<button class="mui-icon" @click="cmonitordetail(it)">监控数据</button>
+					<!-- <input name="radio1" type="radio" @click="findechart(it)"> -->
+				</div>
+				<div class="flex makepollution">
+					<p class="deco"></p>
+					<p>治污设施监测点：</p>
+					<p class="num" v-text="ztotal"></p>
+					<p>个</p>
+				</div>
+				<div class="flex item" v-for="(it,index) in zmonitor">
+					<p v-text="it.title"></p>
+					<button class="mui-icon" @click="cmonitordetail(it)">监控数据</button>
+				</div>
+
+			</div>
+			<div style="width:100%;height: 200px" id="Pbotchart" v-show="isInternet == 1"></div>
+			<div v-show="isInternet == 0">
+				<p class="tipword">没有网络了！可能是您的网络设置未开启</p>
+				<button type="button" id="refresh" class="mui-btn mui-btn-warning tipbtn" @click="tryAgain()">点击重试</button>
+			</div>
+
+		</div>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/echarts.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var pechart;
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: true //关闭back按键监听
+				}
+			})
+			var app = new Vue({
+				el: "#app",
+				data: {
+					companyId: '',
+					isInternet: 3,
+					All_length: 1,
+					enterpeisename: "",
+					cmonitor: [],
+					ctotal: '',
+					zmonitor: [],
+					ztotal: '',
+					value: [],
+					name: []
+				},
+				methods: {
+					findechart: function(it) {
+						getechart(it.id)
+					},
+					cmonitordetail:function(it){
+						cmonitordetailfun(it);
+					},
+					tryAgain: function() {
+						getdeviceStatus();
+					
+					}
+				}
+			})
+			mui.plusReady(function() {
+				var ids = plus.webview.currentWebview();
+				//上个页面传过来的企业id
+				app.companyId = ids.ids
+				// console.log(ids.ids);
+				getdeviceStatus();
+				
+				pechart = echarts.init(document.getElementById('Pbotchart'), {
+					noDataLoadingOption: {
+						text: "暂无数据",
+						effect: 'whirling',
+						effectOption: {
+							backgroundColor: "#fff"
+						},
+						textStyle: {
+							fontSize: 20
+						}
+					}
+				});
+
+
+
+
+			})
+			//获取点击企业信息,产污和治污点的信息
+			function getcompany() {
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/tbasenterprise/enterpriseDendrogramList', {
+					data: {
+						enterpriseId: app.companyId,
+						userId:localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if (res.code == 0) {
+							app.enterpeisename = res.data.title;
+							if(res.data.children == ""){
+								app.ctotal = 0;
+								app.ztotal = 0;
+							}else{
+								for (var i = 0; i < res.data.children.length; i++) {
+									for (var j = 0; j < res.data.children[i].children.length; j++) {
+										if(res.data.children[i].children[j].codeType == "0"){
+											app.cmonitor.push(res.data.children[i].children[j]);
+											// console.log(app.cmonitor.length);
+											app.ctotal = app.cmonitor.length;
+										}else if(res.data.children[i].children[j].codeType == "1"){
+											app.zmonitor.push(res.data.children[i].children[j]);
+											app.ztotal = app.zmonitor.length;
+										}
+									}
+								}
+							}
+						}else{
+							mui.toast(res.msg)
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+						plus.nativeUI.closeWaiting();
+					}
+				});
+			}
+			//获取检测点的折线图
+			function getechart(id) {
+				var d = new Date();
+				var date;
+				if (d.getDate() < 9) {
+					date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + "0" + d.getDate();
+				} else {
+					date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+				}
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/tdevicehistory/queryPowerCurve', {
+					data: {
+						monitorId: id,
+						actTime: date,
+						userId:localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						app.value = [],
+						app.name = []
+						console.log(JSON.stringify(res));
+						if (res.code == 0) {
+							// pechart.hideLoading();
+							for (var i = 0; i < res.data.length; i++) {
+								app.value.push(res.data[i].ysp)
+								app.name.push(res.data[i].ysday);
+								pechart.setOption({
+									tooltip: {
+										trigger: 'axis'
+									},
+									grid: {
+										left: '3%',
+										right: '4%',
+										bottom: '4%',
+										top: '30px',
+										containLabel: true
+									},
+									xAxis: {
+										type: 'category',
+										boundaryGap: false,
+										data: app.name
+									},
+									yAxis: {
+										type: 'value'
+									},
+									series: [{
+										name: '昨日',
+										type: 'line',
+										stack: '总量',
+										data: app.value
+									}]
+								})
+							}
+						}else{
+							mui.toast(res.msg);
+						}
+
+					},
+					error: function(xhr, type, errorThrown) {
+
+					}
+				});
+			}
+
+			function cmonitordetailfun(it){
+				var detail = plus.webview.create("./cmonitordetail.html","cmonitordetail","",{
+					monitorId:it.id,
+					monitorname:it.title,
+					monitortype:it.codeType
+				});
+				plus.webview.show(detail,"slide-in-right",300);
+			}
+			
+			
+			function getdeviceStatus() {
+				var types = {};
+				//未知网络
+				types[plus.networkinfo.CONNECTION_UNKNOW] = "Unknown connection";
+				//无网络
+				types[plus.networkinfo.CONNECTION_NONE] = "None connection";
+				//以太网
+				types[plus.networkinfo.CONNECTION_ETHERNET] = "Ethernet connection";
+				//wifi
+				types[plus.networkinfo.CONNECTION_WIFI] = "WiFi connection";
+
+				//wifi连接
+				if (types[plus.networkinfo.getCurrentType()] == types[plus.networkinfo.CONNECTION_NONE] || types[plus.networkinfo
+						.getCurrentType()] ==
+					types[plus.networkinfo.CONNECTION_UNKNOW]) {
+					// 无网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					setTimeout(function() {
+						plus.nativeUI.closeWaiting();
+						app.isInternet = 0
+					}, 3000)
+
+				} else {
+					// 有网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					app.isInternet = 1;
+					getcompany();
+
+				}
+			}
+		</script>
+	</body>
+
+</html>

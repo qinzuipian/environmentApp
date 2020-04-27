@@ -1,0 +1,26 @@
+@charset "utf-8";
+.bg{
+	width: 95%;
+	background: white;
+	margin-left: 2.5%;
+	/* height: 100px; */
+	margin-top: 50px;
+	border-radius: 10px;
+	padding-bottom: 20px;
+	padding-left: 20px;
+}
+.detail{
+	padding: 4px 0 10px 10px;
+	font-size: 18px;
+	border-bottom: 1px solid gainsboro;
+}
+.flex{
+	margin-top: 1.25rem;
+	
+}
+.reson{
+	width: 75px;
+} 
+.reason_{
+	width: calc(100% - 75px);
+}

@@ -1,0 +1,19 @@
+{
+  "index.html": {
+    "resources": [
+      "src/index/index.html"
+    ],
+    "refer": [
+      "src/production/production.html",
+      "src/PollutionControl/pollutionControl.html",
+      "src/index/index.html",
+      "src/own/own.html",
+      "src/alarm/alarm.html"
+    ]
+  },
+  "src/alarm/alarm.html": {
+    "refer": [
+      "src/alarm/search_factor.html"
+    ]
+  }
+}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>修改密码</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+	</head>
+	<style type="text/css">
+		@charset "utf-8";
+		.mui-input-row label~input, .mui-input-row label~select, .mui-input-row label~textarea{
+			width: 74%;
+			height: 50px;
+			
+			
+		}
+		.mui-input-row label{
+			width: 26%;
+			padding-left: 7%;
+			height: 50px;
+			line-height:1.7;
+			
+		}
+		#submit{
+			width: 90%;
+			height: 40px;
+			background: #5FB878;
+			margin: 10px 5% 0 5%;
+			text-align: center;
+			line-height: 40px;
+			border-radius: 10px;
+			margin-top: 40px;
+			color: white;
+			font-size: 0.875rem;
+		}
+		.mui-icon{
+			line-height: 1.5;
+		}
+
+	</style>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<a style="padding-top: 4px;" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">修改密码</h1>
+			<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="padding-top: 3px;" id="searchFactor"></span> -->
+		</header>
+		<div id="app">
+			<form class="mui-input-group">
+				<div class="mui-input-row" style="height: 50px;">
+					<label class="mui-icon" style="font-size: 16px;">原密码</label>
+					<input type="password" class="mui-input-clear" id="old" placeholder="请填写原密码">
+				</div>
+				<div class="mui-input-row" style="height: 50px;">
+					<label class="mui-icon" style="font-size: 16px;">新密码</label>
+					<input type="password" id="new" class="mui-input-clear" placeholder="请填写新密码">
+				</div>
+				<div class="mui-input-row" style="height: 50px;">
+					<label class="mui-icon" style="font-size: 16px;">新密码</label>
+					<input type="password" id="new_" class="mui-input-clear" placeholder="请再次填写新密码">
+				</div>
+			</form>
+			<div id="submit" data-loading-text ="数据提交...">提交</div>
+		</div>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: true //关闭back按键监听
+				}
+			})
+			mui.plusReady(function() {
+				var submit = document.getElementById("submit");
+				submit.addEventListener("tap",function(){
+					changepwd();
+				})
+
+			})
+			function changepwd(){
+				var old = document.getElementById("old").value;
+				var newpwd = document.getElementById("new").value;
+				var newpwd_ = document.getElementById("new_").value;
+				var token = window.localStorage.getItem("token");
+				var data = JSON.stringify({
+					newPassword:newpwd,
+					password:old,
+					token:token,
+					userId:localStorage.getItem("userId")
+				})
+				if(newpwd !=newpwd_){
+					mui.toast("两次密码不一致");
+				}else{
+					mui.ajax(JTURL +'/sys-mgr/sys/user/password',{
+						data:data,
+						dataType:'json',//服务器返回json格式数据
+						type:'post',//HTTP请求类型
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						timeout:10000,//超时时间设置为10秒；
+						success:function(res){
+							console.log(JSON.stringify(res));
+							if(res.code == 0){
+								mui.toast("修改密码成功");
+								var wvs=plus.webview.all();
+									for(var i=0;i<wvs.length;i++){
+										console.log('webview'+i+': '+wvs[i].getURL());
+									}
+								window.localStorage.removeItem("token")
+								var login = plus.webview.create("../login/login.html");
+								plus.webview.show(login, "slide-in-right", 300);
+								var ws = plus.webview.currentWebview();
+								plus.webview.close(ws,"slide-out-left",300);
+							}else{
+								mui.toast(res.msg);
+							}
+						},
+						error:function(xhr,type,errorThrown){
+							
+						}
+					});
+				}
+				
+				
+			}
+		</script>
+	</body>
+
+</html>

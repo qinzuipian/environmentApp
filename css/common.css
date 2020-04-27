@@ -1,0 +1,87 @@
+@charset "utf-8";
+
+#app {
+	margin-top: 45px;
+}
+
+p {
+	color: black;
+	font-size: 15px;
+	margin: 0px;
+}
+
+.flex {
+	display: flex;
+}
+
+.mui-bar .mui-icon {
+	padding-top: 0px;
+}
+
+* {
+	touch-action: pan-y;
+}
+
+li {
+	list-style: none;
+}
+
+.header-blue {
+	background: #5FB878;
+	z-index: 999;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+
+.header-blue p {
+	color: white;
+}
+
+.header-blue span {
+	color: white;
+}
+
+.header-blue i {
+	color: white;
+}
+
+.header-blue h1 {
+	color: white;
+	line-height: 50px;
+}
+
+.header-blue a {
+	color: white;
+}
+
+.tipword {
+	margin-top: 250px;
+	text-align: center;
+	font-size: 16px;
+}
+
+.tipbtn {
+	margin-top: 8px;
+	margin-left: calc(50% - 41px);
+	line-height: 10px;
+	font-size: 12px;
+	/* margin-top: 10px; */
+	margin-right: 10px;
+	margin-bottom: 15px;
+	background: #008000;
+	color: white;
+}
+
+body {
+
+	padding-top: constant(safe-area-inset-top);
+
+}
+
+.mui-bar.mui-bar-nav {
+
+	top: constant(safe-area-inset-top);
+
+}

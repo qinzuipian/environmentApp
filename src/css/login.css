@@ -1,0 +1,42 @@
+@charset "utf-8";
+
+
+.bg{
+	background-image: url(../../img/timg.jpg);
+	width: 100%;
+}
+
+.mui-input-group{
+	background: transparent;
+	
+}
+.mui-input-group .mui-input-row {
+    height: 60px;
+}
+.mui-input-group .mui-input-row:after {
+	height: 2px;
+}
+.mui-input-row label {
+	line-height: 2.2;
+	width: 30%;
+}
+.mui-input-row label~input, .mui-input-row label~select, .mui-input-row label~textarea{
+	width: 70%;
+}
+input[type=color], input[type=date], input[type=datetime-local], input[type=datetime], input[type=email], input[type=month], input[type=number], input[type=password], input[type=search], input[type=tel], input[type=text], input[type=time], input[type=url], input[type=week], select, textarea{
+	height: 60px;
+}
+.mui-icon{
+	line-height: 2;
+}
+.login{
+	width: 90%;
+	height: 50px;
+	font-size: 16px;
+	margin-top: 30px;
+	margin-left: 5%;
+	border-radius: 5px ;
+}
+.mui-input-group:after{
+	background-color: transparent;
+}

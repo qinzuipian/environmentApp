@@ -1,0 +1,473 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>运行数据</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/PollutionControl/cmonitordetail.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.picker.min.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<a style="padding-top: 10px;" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">实时监控</h1>
+			<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="padding-top: 3px;" id="searchFactor"></span> -->
+		</header>
+		<div id="app">
+			<div class="monitorname" v-show="isInternet == 1">
+				<p v-text="monitorname"></p>
+			</div>
+			<div class="bg" v-show="isInternet == 1">
+				<div class="flex time">
+					<p v-text="date"></p>
+					<button type="button" class="mui-btn mui-btn-outlined" id="picktime">时间选择</button>
+				</div>
+				<div style="width:100%;height: 200px" id="kw"></div>
+				<div style="width:100%;height: 200px" id="power"></div>
+				<div style="display: flex;justify-content: flex-end;margin-top: 1.25rem;">
+					<button type="button" class="mui-btn mui-btn-outlined" id="morepick" style="margin-bottom: 20px;margin-right: 1.25rem;">参数切换</button>
+				</div>
+				<div style="width:100%;height: 200px;display: none;" id="more"></div>
+				<!-- <div id="item" style="display: none;">
+					<div class="banner flex">
+						<p>序号</p>
+						<p>时间</p>
+						<p>电流</p>
+					</div>
+					<div style="overflow: scroll;">
+						<div class="content flex">
+							<p>1</p>
+							<p>00:19</p>
+							<p>0.9</p>
+						</div>
+						<div class="content flex">
+							<p>1</p>
+							<p>00:19</p>
+							<p>0.9</p>
+						</div>
+						<div class="content flex">
+							<p>1</p>
+							<p>00:19</p>
+							<p>0.9</p>
+						</div>
+					</div>
+				</div> --> 
+			</div>
+			<div v-show="isInternet == 0">
+				<p class="tipword">没有网络了！可能是您的网络设置未开启</p>
+				<button type="button" id="refresh" class="mui-btn mui-btn-warning tipbtn" @click="tryAgain()">点击重试</button>
+			</div>
+
+		</div>
+
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/echarts.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: true //关闭back按键监听
+				}
+			})
+			var app = new Vue({
+				el: "#app",
+				data: {
+					date: "",
+					monitorId: "",
+					monitorname:"",
+					flag:5,
+					kw_listx:[],
+					kw_listy:[],
+					power_listx:[],
+					power_listy:[],
+					more_listx:[],
+					more_listy:[],
+					type:'',
+					morename:"",
+					isInternet:1
+					
+				},
+				methods:{
+					tryAgain: function() {
+						getdeviceStatus();
+					
+					}
+				}
+			})
+			mui.plusReady(function() {
+				var ids = plus.webview.currentWebview();
+				app.monitorId = ids.detail.monitorId;
+				app.monitorname = ids.detail.monitorName;
+				app.monitortype = ids.detail.codeType;
+				if(app.monitortype == "0"){
+					//产污监测点
+					app.flag = 0
+				}else if(app.monitortype == "1"){
+					//治污监测点
+					app.flag = 1
+				}
+				getdeviceStatus();
+			})
+			
+			function pickDate() {
+				plus.nativeUI.pickDate(function(e) {
+					var now = e.date;
+					var year = now.getFullYear(); //得到年份
+					var month = now.getMonth() + 1 < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1); //得到月份
+					var date = now.getDate() < 10 ? "0" + now.getDate() : now.getDate(); //得到日期		
+					app.date = year + '-' + month + '-' + date;
+					// app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+					/* if (d.getDate() < 9) {
+						app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + "0" + d.getDate();
+					} else {
+						app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+					} */
+					console.log(app.date);
+					getmonitordate();
+					powers();
+					if(app.type != ""){
+						more();
+					}
+				}, function(e) {
+					console.log("未选择日期：" + JSON.stringify(e));
+				});
+			} 
+			
+			//时间选择器
+
+			var picktime = document.getElementById("picktime");
+			picktime.addEventListener("tap", function() {
+				pickDate();
+				console.log(app.date);
+				
+			})
+			
+			//更多参数的选择
+			var morepick = document.getElementById("morepick");
+			morepick.addEventListener("tap", function() {
+				app.more_listx = [];
+				app.more_listy = []
+				document.getElementById("more").style.display = "block";
+				var picker = new mui.PopPicker();
+				picker.setData([{
+					value: 'pi',
+					text: '有功电能'
+				},
+				{
+					value: 'The',
+					text: '功率因数'
+				},
+				{
+					value: 'q',
+					text: '无功功率'
+				},
+				{
+					value: 'u',
+					text: '电压'
+				},
+				{
+					value: 'i',
+					text: '电流'
+				},
+				{
+					value: 'p',
+					text: '有功功率'
+				}
+				]);
+				picker.show(function(selectItems) {
+					app.type = selectItems[0].value 
+					more();
+					app.morename = selectItems[0].text
+				})
+			})
+			
+			
+			
+			
+			//功率曲线
+			function kwchart() {
+				pechart = echarts.init(document.getElementById('kw'))
+				pechart.setOption({
+					title: {
+						text: '功率'
+					},
+					tooltip: {
+						trigger: 'axis'
+					},
+					grid: {
+						left: '3%',
+						right: '4%',
+						bottom: '4%',
+						top: '30px',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						data: app.kw_listx
+					},
+					yAxis: {
+						type: 'value'
+					},
+					series: app.kw_listy
+				}, true)
+			}
+			//用电周期
+			function powerchart() {
+				power = echarts.init(document.getElementById('power'))
+				power.setOption({
+					title: {
+						text: '周期电量'
+					},
+					tooltip: {
+						trigger: 'axis'
+					},
+					grid: {
+						left: '3%',
+						right: '4%',
+						bottom: '4%',
+						top: '30px',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						data: app.power_listx
+					},
+					yAxis: {
+						type: 'value'
+					},
+					series: app.power_listy
+				}, true)
+			}
+			//更多参数
+			function morecanshu() {
+				mores = echarts.init(document.getElementById('more'))
+				mores.clear()
+				mores.setOption({
+					title: {
+						text: app.morename 
+					},
+					tooltip: {
+						trigger: 'axis'
+					},
+					grid: {
+						left: '3%',
+						right: '4%',
+						bottom: '4%',
+						top: '30px',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						data: app.more_listx
+					},
+					yAxis: {
+						type: 'value'
+					},
+					series: app.more_listy
+				}, true)
+			}
+
+
+
+			//获取监测点的功率曲线
+			function getmonitordate() {
+				app.kw_listx =[]
+				app.kw_listy = []
+				console.log(app.flag); 
+				console.log(app.monitorId);
+				// console.log(app.date); 
+				mui.ajax(JTURL + '/environmental_intelligent_monitoring/tdevicehistory/queryMonitoringPowerCurve', {
+					data: {
+						flag: app.flag,
+						actTime: app.date,
+						monitorId: app.monitorId,
+						userId:localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						console.log(JSON.stringify(res));
+						if(res.code == 0){
+							if(res.data != ""){
+								for (let key in res.data.mapy) {
+									var obj = {}
+									var list = []
+									obj.name = key
+									list = res.data.mapy[key];
+									obj.data = list;
+									obj.type = "line"
+									app.kw_listy.push(obj);
+								}
+								app.kw_listx = res.data.mapx.x;
+							}else if(res.data == ""){
+								app.kw_listx =[]
+								app.kw_listy =[]
+							}
+							kwchart();
+						}else{
+							mui.toast(res.mag)
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+
+					}
+				});
+			}
+		     //监测点的用电量
+		    function powers(){
+				app.power_listx = []
+				app.power_listy = []
+				console.log(app.flag);
+				console.log(app.monitorId);
+				// console.log(app.date);
+				mui.ajax(JTURL + '/environmental_intelligent_monitoring/tkwhhour/queryCycleEle',{
+					data:{
+						flag: app.flag,
+						actTime: app.date,
+						monitorId: app.monitorId,
+						userId:localStorage.getItem("userId")
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(res){
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if(res.code == 0){
+							if(res.data != ""){
+								for (let key in res.data.mapy) {
+									var obj = {}
+									var list = []
+									obj.name = key
+									list = res.data.mapy[key];
+									obj.data = list;
+									obj.type = "line"
+									app.power_listy.push(obj);
+								}
+								app.power_listx = res.data.mapx.x;
+							}else if(res.data == ""){
+								app.power_listx = []
+								app.power_listy = []
+							}
+							powerchart();
+						}else{
+							mui.toast(res.mag)
+						}
+						
+					},
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+			}
+		     //更多参数的数据
+		    function more(){
+				console.log(app.date);
+				mui.ajax(JTURL + '/environmental_intelligent_monitoring/tdevicehistory/queryEnterpriseMoreParam',{
+					data:{
+						flag: app.flag,
+						actTime: app.date,
+						monitorId: app.monitorId,
+						type:app.type,
+						userId:localStorage.getItem("userId")
+					},
+					dataType:'json',//服务器返回json格式数据
+					type:'post',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(res){
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if(res.code == 0){
+							if(res.data !=""){
+								for (let key in res.data.mapy) {
+									var obj = {}
+									var list = []
+									obj.name = key
+									list = res.data.mapy[key];
+									obj.data = list;
+									obj.type = "line"
+									app.more_listy.push(obj);
+								}
+								app.more_listx = res.data.mapx.x;
+							}else if(res.data == ""){
+								app.more_listx = []
+								app.more_listy =[]
+							}
+							morecanshu();
+						}else{
+							mui.toast(res.mag)
+						}
+						
+						
+					},
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+			}
+			
+			function getdeviceStatus() {
+				var types = {};
+				//未知网络
+				types[plus.networkinfo.CONNECTION_UNKNOW] = "Unknown connection";
+				//无网络
+				types[plus.networkinfo.CONNECTION_NONE] = "None connection";
+				//以太网
+				types[plus.networkinfo.CONNECTION_ETHERNET] = "Ethernet connection";
+				//wifi
+				types[plus.networkinfo.CONNECTION_WIFI] = "WiFi connection";
+			
+				//wifi连接
+				if (types[plus.networkinfo.getCurrentType()] == types[plus.networkinfo.CONNECTION_NONE] || types[plus.networkinfo.getCurrentType()] ==
+					types[plus.networkinfo.CONNECTION_UNKNOW]) {
+					// 无网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					setTimeout(function() {
+						plus.nativeUI.closeWaiting();
+						app.isInternet = 0
+					}, 3000)
+			
+				} else {
+					// 有网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					app.isInternet = 1;
+					//获取时间的选择框
+					var now = new Date();
+					var year = now.getFullYear(); //得到年份
+					var month = now.getMonth() + 1 < 10 ? "0" + (now.getMonth() + 1) : (now.getMonth() + 1); //得到月份
+					var date = now.getDate() < 10 ? "0" + now.getDate() : now.getDate(); //得到日期		
+					app.date = year + '-' + month + '-' + date;
+					// app.date = day1.getFullYear() + "-" + (day1.getMonth() + 1) + "-" + day1.getDate();
+					/* if (d.getDate() < 9) {
+						app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + "0" + d.getDate();
+					} else {
+						app.date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+					} */
+					getmonitordate();
+					powers();
+					
+				}
+			}
+		
+		
+		
+		
+		
+		
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,24 @@
+@charset "utf-8";
+.banner{
+	width: 100%;
+	background: rgb(193,222,194);
+	line-height: 40px;
+}
+.banner p:nth-child(1){
+	text-align: center;
+	font-size: 16px;
+}
+.content{
+	width: 95%;
+	margin-left: 2.5%;
+	border-radius: 10px;
+	background: white;
+
+}
+.type{
+	margin-left: 30px;
+}
+.chart p{
+	margin: 10px;
+	padding-top:10px ;
+}

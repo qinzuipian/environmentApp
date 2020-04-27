@@ -1,0 +1,438 @@
+<!doctype html>
+<html>
+	<!-- // todo 当一个企业没有存在企业总表就需要加一层判断，怎么不显示toast、 -->
+	<head>
+		<meta charset="utf-8">
+		<title>总体监控</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.picker.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.poppicker.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/PollutionControl/pollutionControl.css" />
+
+	</head>
+
+
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<h1 class="mui-title">总体监控</h1>
+			<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="padding-top: 3px;" id="searchFactor"></span> -->
+		</header>
+		<div id="app">
+			<div id="map" style="position: fixed;left: 0px;top: 0px;"></div>
+			<div id="_company" v-show="All_length == 1 && isInternet == 1">
+				<div class="flex" style="margin-left: 2.5%;">
+					<p class="mui-icon-map mui-icon icon"></p>
+					<p class="company_list">企业列表</p>
+				</div>
+				<div class="company" v-for="(it,index) in company" @click="searchCom(it)">
+					<div class="title flex" style="justify-content: space-between;">
+						<p class="name" v-text="it.enterpriseName"></p>
+						<p class="status" v-show="it.isAbnormal == 0">正常</p>
+						<p class="unstatus" v-show="it.isAbnormal == 1">异常</p>
+					</div>
+					<p class="address" v-text="it.address"></p>
+					<div class="flex company_bar">
+						<div class="flex organize">
+							<p class="trade" style="width: 60px;">所属机构:</p>
+							<p class="trade" style="width: 60%;" v-text="it.organizeName"></p>
+						</div>
+						<div class="flex" style="width: 50%;">
+							<p class="trade" style="width: 60px;">所属行业:</p>
+							<p class="trade" style="width: 60%;" v-text="it.tradeName"></p>
+						</div>
+					</div>
+					<div class="flex data_status" style="justify-content: space-around;">
+						<div>
+							<p v-text="it.produceType"></p>
+							<p>生产状态</p>
+						</div>
+						<div>
+							<p v-text="it.productMonitorNum">4</p>
+							<p>产污监测点</p>
+						</div>
+						<div>
+							<p v-text="it.treatMonitorNum">0</p>
+							<p>治污检测点</p>
+						</div>
+						<div>
+							<p v-text="it.startStatusNum"></p>
+							<p>检测点数</p>
+						</div>
+					</div>
+					<div class="flex" style="justify-content: flex-end;">
+						<button type="button" class="mui-btn mui-btn-outlined" @click="pollutuionMonitor(it)">产污设施监控</button>
+						<button type="button" class="mui-btn mui-btn-outlined" @click="monitor(it)">企业监控</button>
+					</div>
+				</div>
+			</div>
+			<div v-show="isInternet == 0">
+				<p class="tipword">没有网络了！可能是您的网络设置未开启</p>
+				<button type="button" id="refresh" class="mui-btn tipbtn" @click="tryAgain()">点击重试</button>
+			</div>
+			<p style="margin-top: 100px ; text-align: center;" v-show="All_length == 0 && isInternet == 1">暂无数据</p>
+
+
+		</div>
+		<!--<!--xq2PQs4sG3sHfuHHwtqaFBcErq9uUyND   pc端-->
+		<!--jI6OASOanMXjiCjQqIgQ4gbXR7pp3r86   移动端-->
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=jI6OASOanMXjiCjQqIgQ4gbXR7pp3r86"></script>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mui.poppicker.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var map = null;
+			var label, geoc;
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: false //关闭back按键监听
+				},
+				pullRefresh: {
+					container: "#app", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+					down: {
+						style: 'circle', //必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
+						color: '#2BD009', //可选，默认“#2BD009” 下拉刷新控件颜色
+						height: '50px', //可选,默认50px.下拉刷新控件的高度,
+						range: '0px', //可选 默认100px,控件可下拉拖拽的范围
+						offset: '0px', //可选 默认0px,下拉刷新控件的起始位置
+						auto: false, //可选,默认false.首次加载自动上拉刷新一次
+						callback: function() { //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+							var ws = plus.webview.currentWebview();
+							ws.reload();
+							mui('#app').pullRefresh().endPulldownToRefresh(false);
+						}
+					},		
+					 up: {
+                        contentrefresh: '正在加载...',
+                        contentnomore:'我是有底线的',
+                        callback: pullupRefresh
+                    }
+				}
+			})
+			var app = new Vue({
+				el: '#app',
+				data: {
+					company: [],
+					adds: [],
+					All_length: 1,
+					isInternet: 1
+				},
+				methods: {
+					searchCom: function(it) {
+						var point = new BMap.Point(it.longitude, it.latitude);
+						map.centerAndZoom(point, 16);
+					},
+					//产污设施监控
+					pollutuionMonitor: function(it) {
+						event.stopPropagation();
+						var pollutuionMonitor = plus.webview.create("./pollutionMonitor.html", "pollutionMonitor", {}, {
+							ids: it.id
+						});
+						plus.webview.show(pollutuionMonitor, "slide-in-right", 300);
+					},
+					//企业监控
+					monitor: function(it) {
+						event.stopPropagation();
+						getcompanys(it)
+
+					},
+					tryAgain: function() {
+						getdeviceStatus();
+
+					}
+				}
+
+			})
+			mui.plusReady(function() {
+				getdeviceStatus()
+
+			})
+			/* 下拉刷新与向上滚动冲突的解决方法 */
+			document.querySelector('#_company').addEventListener('scroll', function(e) {
+				// console.log(this.scrollTop)
+				if (this.scrollTop > 10) { 
+						plus.webview.currentWebview().setPullToRefresh({support:false});
+					} else { //div滚动到最上面才触发下拉刷新
+						plus.webview.currentWebview().setPullToRefresh({support:true,style:"circle"})
+					}
+			})
+
+
+			//获取企业是否有企业总表
+			function getcompanys(it) {
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/tbasenterprise/enterpriseDendrogramList', {
+					data: {
+						enterpriseId: it.id,
+						userId:localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if (res.code == 0) {
+							if (res.data.children != "") {
+								for (var i = 0; i < res.data.children.length; i++) {
+									if (res.data.children[i].type == "t_device_monitor_all") {
+										var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
+											allmonitorid: res.data.children[i].id,
+											conpanyid: res.data.id
+										});
+										plus.webview.show(monitor, "slide-in-right", 300);
+									} else if (res.data.children[i].type != "t_device_monitor_all") {
+										mui.toast("该企业暂无企业数据")
+									}
+								}
+							} else if (res.data.children == "") {
+								mui.toast("该企业暂无企业数据")
+							}
+
+						} else {
+							mui.toast(res.msg)
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+						plus.nativeUI.closeWaiting();
+					}
+				});
+			}
+
+			//初始化地图
+			function mapInit() {
+				var centerPoint;
+				if (app.company.length == 0) {
+					centerPoint = [114.504434, 37.069162];
+					app.All_length = 0
+
+				} else {
+					centerPoint = [app.company[0].longitude, app.company[0].latitude]
+					app.All_length = 1
+				}
+
+				map = new BMap.Map("map");
+				var point = new BMap.Point(centerPoint[0], centerPoint[1]);
+				map.addControl(new BMap.NavigationControl()); //缩放的尺寸显示 比如1公里
+				map.addControl(new BMap.ScaleControl()); // 创建标注
+				map.centerAndZoom(point, 12);
+				map.enableScrollWheelZoom(true);
+				geoc = new BMap.Geocoder();
+
+				for (var i = 0; i < app.company.length; i++) {
+					var _point = new BMap.Point(app.company[i].longitude, app.company[i].latitude);
+					addMarker(_point);
+				};
+
+				function addMarker(_point) {
+					var marker = new BMap.Marker(_point);
+					map.addOverlay(marker);
+					// 给标注上添加点击事件
+					marker.addEventListener("click", function(e) {
+						for (var i = 0; i < app.company.length; i++) {
+							if (app.company[i].longitude == _point.lng) {
+								map.removeOverlay(label)
+								createInfoWindow(app.company[i], _point);
+							}
+						}
+					});
+				}
+
+
+				var marker = new BMap.Marker(_point);
+				//添加label框
+				function createInfoWindow(json, _point) {
+					var opts = {
+						position: _point, // 指定文本标注所在的地理位置
+						offset: new BMap.Size(10, -15) //设置文本偏移量
+					}
+					label = new BMap.Label(json.enterpriseName, opts); // 创建文本标注对象
+					label.setStyle({
+						color: "black",
+						fontSize: "13px",
+						height: "20px",
+						lineHeight: "20px",
+						fontFamily: "微软雅黑"
+					});
+					map.addOverlay(label);
+				}
+
+			}
+
+			function init() {
+				//获取屏幕的高度,计算下面滚动数据列表的高度
+				var screenHeight = window.screen.availHeight;
+				// console.log(screenHeight);
+				var company_high = screenHeight - (44 + 230 + 60);
+				document.getElementById("_company").style.height = company_high + "px";
+
+				// var searchFactor = document.getElementById("searchFactor");
+				// searchFactor.addEventListener("tap", function() {
+				// 	var searchFactor = plus.webview.create("./search_factor.html", "search_factor")
+				// 	plus.webview.show(searchFactor, "slide-in-right", 300);
+				// }, {
+				// 	passive: false
+				// })
+			}
+				
+			function pullupRefresh() {
+				  setTimeout(function () {
+                     mui('#app').pullRefresh().endPullupToRefresh((isOver)); //参数为true代表没有更多数据了。           
+                }, 500);
+				getCompany();//ajax
+			}
+			 var pageStart = 1;//开始数据条数
+			 var pageSize = 10;//每页显示条数
+			 var isOver = false;//是否加载完
+	
+			//获取异常企业的状态
+			function getCompany() {
+				// console.log(pageStart)
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/dataMonitor/queryEnterpriseReportList', {
+					data: {
+						userId:localStorage.getItem("userId"),
+						page:pageStart
+						
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if (res.code == 0) {				
+							for (var i = 0; i < res.page.list.length; i++) {
+								res.page.list[i].address = res.page.list[i].province + res.page.list[i].city + res.page.list[i].area +
+									res.page.list[i].address;
+								res.page.list[i].startStatusNum = res.page.list[i].startStatusNum + res.page.list[i].endStatusNum +
+									res.page.list[i].unknownStatusNum
+								if (res.page.list[i].produceType == 0) {
+									res.page.list[i].produceType = "限产"
+								} else if (res.page.list[i].produceType == 1) {
+									res.page.list[i].produceType = "停产"
+								} else {
+									res.page.list[i].produceType = "生产"
+								}
+								app.company.push(res.page.list[i])
+								mapInit();
+							}
+							 //判断是否还有数据,若小于每次加载条数,结束
+							if(res.page.list.length < pageSize){
+								isOver = true;
+							}
+							//每次加载结束之后，如果还有数据则++
+							if(isOver == false){
+								pageStart++;
+							}
+						} else {
+							mui.toast(res.msg);
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+						plus.nativeUI.closeWaiting();
+
+					}
+				});
+			}
+
+			function getdeviceStatus() {
+				var types = {};
+				//未知网络
+				types[plus.networkinfo.CONNECTION_UNKNOW] = "Unknown connection";
+				//无网络
+				types[plus.networkinfo.CONNECTION_NONE] = "None connection";
+				//以太网
+				types[plus.networkinfo.CONNECTION_ETHERNET] = "Ethernet connection";
+				//wifi
+				types[plus.networkinfo.CONNECTION_WIFI] = "WiFi connection";
+
+				//wifi连接
+				if (types[plus.networkinfo.getCurrentType()] == types[plus.networkinfo.CONNECTION_NONE] || types[plus.networkinfo.getCurrentType()] ==
+					types[plus.networkinfo.CONNECTION_UNKNOW]) {
+					// 无网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					setTimeout(function() {
+						plus.nativeUI.closeWaiting();
+						app.isInternet = 0
+					}, 3000)
+
+				} else {
+					// 有网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					app.isInternet = 1;
+					mapInit()
+					init();
+					getCompany();
+
+				}
+			}
+
+			window.addEventListener("refresh", function() {
+				console.log("pollution刷新了");
+				pollutionControl = plus.webview.getWebviewById("pollutionControl");
+				// pollutionControl.show();
+				var ws = plus.webview.currentWebview();
+				ws.reload();
+			}, {
+				passive: false
+			});
+
+
+
+			//行业和状态的选择
+			// 			function init() {
+			// 				var industry = document.getElementById("industry");//行业
+			// 				var status = document.getElementById("status");//状态
+			// 				industry.addEventListener("tap", function() {
+			// 					console.log(1);
+			// 					var picker = new mui.PopPicker();
+			// 					picker.setData([{
+			// 						value: "first",
+			// 						text: "第一项"
+			// 					}, {
+			// 						value: "second",
+			// 						text: "第一项"
+			// 					}, {
+			// 						value: "third",
+			// 						text: "第三项"
+			// 					}, {
+			// 						value: "fourth",
+			// 						text: "第四项"
+			// 					}, {
+			// 						value: "fifth",
+			// 						text: "第五项"
+			// 					}]);
+			// 					picker.show(function(selectItems) {
+			// 						console.log(selectItems[0].text); //智子
+			// 						console.log(selectItems[0].value); //zz 
+			// 					})
+			// 				},{passive:false})
+			// 				status.addEventListener("tap", function() {
+			// 					var picker = new mui.PopPicker();
+			// 					picker.setData([{
+			// 						value: "first",
+			// 						text: "停产"
+			// 					}, {
+			// 						value: "second",
+			// 						text: "限产"
+			// 					}, {
+			// 						value: "third",
+			// 						text: "开始"
+			// 					}]);
+			// 					picker.show(function(selectItems) {
+			// 						console.log(selectItems[0].text); //智子
+			// 						console.log(selectItems[0].value); //zz 
+			// 					})
+			// 				},{passive:false})
+			// 
+			// 
+			// 			}
+		</script>
+	</body>
+
+</html>

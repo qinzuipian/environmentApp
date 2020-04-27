@@ -1,0 +1,51 @@
+@charset "utf-8";
+.bg{
+	width: 95%;
+	margin-left: 2.5%;
+	/* height: 200px; */
+	margin-top: -0.625rem;
+	background: whitesmoke;
+	z-index: 1111;
+	border-radius: 10px;
+}
+.monitorname{
+	background: #5FB878;
+	height: 80px;
+	
+}
+.monitorname p{
+	line-height: 30px;
+	font-size: 18px;
+	color: white;
+	margin: 0px 00 0 40px;
+}
+.monitorname p:nth-child(1){
+	padding-top: 10px;
+}
+.time{
+	justify-content: center;
+	padding-top: 10px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid gainsboro;
+	
+}
+.time p:nth-child(1){
+	margin-right: 10px;
+	line-height: 30px;
+}
+.banner{
+	background: #5FB878;
+	justify-content: space-around;
+	line-height: 40px;
+}
+.banner p{
+	color: white;
+}
+.content{
+	justify-content: space-around;
+	line-height: 40px;
+	border-bottom: 1px solid gainsboro;
+}
+.content p{
+	color: black;
+}

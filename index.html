@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+		<title>环保云APP</title>
+		<script src="js/mui.min.js"></script>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<link rel="stylesheet" type="text/css" href="css/iconfont.css" />
+	</head>
+	<style type="text/css">
+		/* 点击下面的图标，点中放大 */
+		.mui-active {
+			color: #000000;
+			animation: enlarge 0.2s linear forwards;
+		}
+
+		@keyframes enlarge {
+			from {
+				transform: scale(1, 1);
+			}
+
+			to {
+				transform: scale(1.2, 1.2);
+			}
+		}
+
+
+		
+	</style>
+	<body>
+		<div id="app">
+			<!-- 底部nav-->
+			<nav class="mui-bar mui-bar-tab" id="nav" style="height: 60px;">
+				<a id="index_" class="mui-tab-item mui-active ">
+					<span style="font-size: 24px;" class="mui-icon iconfont">&#xe637;</span>
+					<span class="mui-tab-label iconfont-word">首页</span>
+				</a>
+				<a id="pollutionControl" class="mui-tab-item">
+					<span style="font-size: 22px;" class="mui-icon iconfont">&#xe662;</span>
+					<span class="mui-tab-label iconfont-word">总体监控</span>
+				</a>
+				<a id="alarm" class="mui-tab-item">
+					<span style="font-size: 22px;" class="mui-icon iconfont">&#xe794;</span>
+					<span class="mui-tab-label iconfont-word">故障</span>
+				</a>
+				<a id="production" class="mui-tab-item">
+					<span style="font-size: 26px;" class="mui-icon iconfont">&#xe65a;</span>
+					<span class="mui-tab-label iconfont-word">限产停产</span>
+				</a>
+				<a id="own" class="mui-tab-item">
+					<span style="font-size: 26px;" class="mui-icon iconfont">&#xe62a;</span>
+					<span class="mui-tab-label iconfont-word">我的</span>
+				</a>
+			</nav>
+		</div>
+		<script type="text/javascript" charset="utf-8">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: false //关闭back按键监听
+				},
+				subpages: [ //首先加载首页  
+					{
+						url: 'src/index/index_.html',
+						id: 'index_',
+						styles: {
+							top: '0px',
+							bottom: '60px'
+						}
+					}
+				]
+				// preloadPages: [ //预加载其他页面  
+				// 	{
+				// 		url: 'src/PollutionControl/pollutionControl.html',
+				// 		id: 'pollutionControl',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	},
+				// 	{
+				// 		url: 'src/alarm/alarm.html',
+				// 		id: 'alarm',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	},
+				// 	{
+				// 		url: 'src/production/production.html',
+				// 		id: 'production',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	},
+				// 	{
+				// 		url: 'src/own/own.html',
+				// 		id: 'own',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	}
+				// ],
+			});
+
+			mui.plusReady(function() {
+				mainPage1 = mui.preload({
+					url: 'src/PollutionControl/pollutionControl.html',
+					id: 'pollutionControl',
+					styles: {
+						top: '0px',
+						bottom: '60px'
+					}
+				})
+				mainPage2 = mui.preload({
+					url: 'src/alarm/alarm.html',
+					id: 'alarm',
+					styles: {
+						top: '0px',
+						bottom: '60px'
+					}
+
+				})
+				mainPage3 = mui.preload({
+					url: 'src/production/production.html',
+					id: 'production',
+					styles: {
+						top: '0px',
+						bottom: '60px'
+					}
+				})
+				mainPage4 = mui.preload({
+					url: 'src/own/own.html',
+					id: 'own',
+					styles: {
+						top: '0px',
+						bottom: '60px'
+					}
+				})
+				var token = localStorage.getItem("token")
+				if (token == null) {
+					var login = plus.webview.create("./src/login/login.html")
+					plus.webview.show(login, "slide-in-right", 300);
+					// var ws = plus.webview.currentWebview();
+					// plus.webview.close(ws);
+				}
+
+				var index, pollutionControl, alarm, production, own;
+
+				// 首页
+				mui("#nav").on("tap", "#index_", function() { //点击触发   
+					index = plus.webview.getWebviewById("index_");
+					index.show();
+					if (pollutionControl) {
+						pollutionControl.hide()
+					}
+					if (alarm) {
+						alarm.hide()
+					}
+					if (production) {
+						production.hide()
+					}
+					if (own) {
+						own.hide()
+					}
+
+				}, {
+					passive: false
+				})
+				//产污监控
+				mui("#nav").on("tap", "#pollutionControl", function() { //点击触发  
+					pollutionControl = plus.webview.getWebviewById("pollutionControl");
+					pollutionControl.show();
+					if (index) {
+						index.hide()
+					}
+					if (alarm) {
+						alarm.hide()
+					}
+					if (production) {
+						production.hide()
+					}
+					if (own) {
+						own.hide()
+					}
+				}, {
+					passive: false
+				})
+				//报警
+				mui("#nav").on("tap", "#alarm", function() { //点击触发  
+					alarm = plus.webview.getWebviewById("alarm");
+					alarm.show();
+					if (index) {
+						index.hide()
+					}
+					if (pollutionControl) {
+						pollutionControl.hide()
+					}
+					if (production) {
+						production.hide()
+					}
+					if (own) {
+						own.hide()
+					}
+				}, {
+					passive: false
+				})
+				//错峰生产
+				mui("#nav").on("tap", "#production", function() { //点击触发
+					production = plus.webview.getWebviewById("production");
+					production.show();
+					if (index) {
+						index.hide()
+					}
+					if (pollutionControl) {
+						pollutionControl.hide()
+					}
+					if (alarm) {
+						alarm.hide()
+					}
+					if (own) {
+						own.hide()
+					}
+				}, {
+					passive: false
+				})
+				//我的
+				mui("#nav").on("tap", "#own", function() { //点击触发  
+					own = plus.webview.getWebviewById("own");
+					own.show();
+					if (index) {
+						index.hide()
+					}
+					if (pollutionControl) {
+						pollutionControl.hide()
+					}
+					if (alarm) {
+						alarm.hide()
+					}
+					if (production) {
+						production.hide()
+					}
+				}, {
+					passive: false
+				})
+			})
+
+
+
+			window.addEventListener("refresh", function() {
+				console.log("index_显示出来了");
+				index = plus.webview.getWebviewById("index_");
+				index.show();
+				document.getElementById("index_").className = "mui-tab-item mui-active";
+				document.getElementById("own").className = "mui-tab-item";
+				if (mainPage1) {
+					mainPage1.hide()
+				}
+				if (mainPage2) {
+					mainPage2.hide()
+				}
+				if (mainPage3) {
+					mainPage3.hide()
+				}
+				if (mainPage4) {
+					mainPage4.hide()
+				}
+			}, {
+				passive: false
+			})
+		</script>
+	</body>
+
+</html>

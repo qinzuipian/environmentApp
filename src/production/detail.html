@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>查看详情</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css"/>
+		<link rel="stylesheet" type="text/css" href="../../css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="../css/production/detail.css"/>
+		
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<a style="padding-top: 0.625rem;" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">查看详情</h1>
+		</header>
+		<div id="app">
+			<div class="bg">
+				<p class="detail">详细信息</p>
+				<div class="flex">
+					<p>企业名称：</p>
+					<p v-text="enterpriseName"></p>
+				</div>
+				<div class="flex">
+					<p>异常类型：</p>
+					<p v-text="eventType"></p>
+				</div>
+				<div class="flex">
+					<p>车间名称：</p>
+					<p v-text="shopName"></p>
+				</div>
+				<div class="flex">
+					<p>监测点名称：</p>
+					<p v-text="monitorName"></p>
+				</div>
+				<div class="flex">
+					<p>监测点类型：</p>
+					<p></p>
+				</div>
+				
+				<div class="flex">
+					<p>网关编号：</p>
+					<p></p>
+				</div> 
+				<div class="flex">
+					<p>仪表地址：</p>
+					<p></p>
+				</div>
+				<div class="flex">
+					<p>型号：</p>
+					<p></p>
+				</div>
+				<div class="flex">
+					<p>电流变比：</p>
+					<p></p>
+				</div>
+				<div class="flex">
+					<p>电压变比：</p>
+					<p></p>
+				</div>
+				<div class="flex">
+					<p>发生时间：</p>
+					<p></p>
+				</div>
+			</div>
+			
+		</div>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: true //关闭back按键监听
+				}
+			})
+			var app =new Vue({
+				el:"#app",
+				data:{
+					company_ids:'',
+					enterpriseName:'',
+					eventType:"",
+					shopName:"",
+					monitorName:'',
+					
+					
+				}
+			})
+			
+			mui.plusReady(function () {
+			    var ids = plus.webview.currentWebview();
+				app.company_ids = ids.ids;
+				console.log(app.company_ids);
+				getdetail();
+			})
+			//根据企业的唯一
+			function getdetail(){
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/tfirmabnormal/info/' + app.company_ids,{
+					dataType:'json',//服务器返回json格式数据
+					type:'get',//HTTP请求类型
+					timeout:10000,//超时时间设置为10秒；
+					success:function(res){
+						console.log(JSON.stringify(res));
+						if(res.code == 0){
+							app.enterpriseName = res.tFirmAbnormal.enterpriseName;
+							app.eventType = res.tFirmAbnormal.eventType;
+							app.shopName = res.tFirmAbnormal.shopName;
+							app.monitorName = res.tFirmAbnormal.monitorName;
+						}else{
+							mui.toast(res.msg)
+						}
+					},
+					error:function(xhr,type,errorThrown){
+						
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

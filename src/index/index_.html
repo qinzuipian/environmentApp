@@ -1,0 +1,513 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>首页</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/index/index.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav header-blue">
+			<h1 class="mui-title">首页</h1>
+		</header>
+
+		<div id="app">
+			<div v-show="isInternet == 1">
+				<div class="flex" style="justify-content: space-around;background: rgb(193,222,194);">
+					<div style="margin: 15px 0 ;">
+						<div class="flex num">
+							<p v-text="enterpriseNum"></p>
+							<p>家</p>
+						</div>
+						<p>企业数量</p>
+					</div>
+					<div style="margin: 15px 0 ;">
+						<div class="flex num">
+							<p v-text="treatMonitorNum"></p>
+							<p>处</p>
+						</div>
+						<p>治污设施</p>
+					</div>
+					<div style="margin: 15px 0 ;">
+						<div class="flex num">
+							<p v-text="productMonitorNum"></p>
+							<p>处</p>
+						</div>
+						<p>产污设施</p>
+					</div>
+					<div style="margin: 15px 0 ;">
+						<div class="flex num">
+							<p v-text="monitorNum">23</p>
+							<p>个</p>
+						</div>
+						<p>监测点数量</p>
+					</div>
+				</div>
+				<div class="enterpriseBar">
+					<div class="left">
+						<!-- <p class="yes">昨日</p> -->
+						<p class="tom">今日</p>
+					</div>
+
+					<div class="center">
+						<p>治污设施异常企业</p>
+						<div class="flex y1">
+							<p>异常企业</p>
+							<div class="flex number">
+								<p v-text="abnormalNum"></p>
+								<p>家</p>
+							</div>
+						</div>
+						<div id="demo1" class="mui-progressbar">
+							<span></span>
+						</div>
+						<div class="flex y1">
+							<p>涉及治污设施</p>
+							<div class="flex number">
+								<p v-text="treatAbnormalNum"></p>
+								<p>家</p>
+							</div>
+						</div>
+						<div id="demo2" class="mui-progressbar">
+							<span></span>
+						</div>
+						<!-- <div class="flex y1" style="margin-top: 25px;">
+							<p>异常企业</p>
+							<div class="flex number">
+								<p v-text="ysAbnormalNum"></p>
+								<p>家</p>
+							</div>
+						</div> -->
+						<!-- <div id="demo3" class="mui-progressbar">
+							<span></span>
+						</div>
+						<div class="flex y1">
+							<p>涉及治污设施</p>
+							<div class="flex number">
+								<p v-text="ysTreatAbnormalNum">0</p>
+								<p>家</p>
+							</div>
+						</div>
+						<div id="demo4" class="mui-progressbar">
+							<span></span>
+						</div> -->
+					</div>
+
+					<div class="right">
+						<p>限产/停产执行异常</p>
+						<div class="flex y1">
+							<p>执行停产限产企业</p>
+							<div class="flex number">
+								<p v-text="limitProduct"></p>
+								<p>家</p>
+							</div>
+						</div>
+						<div id="demo5" class="mui-progressbar">
+							<span></span>
+						</div>
+						<div class="flex y1">
+							<p>未按要求执行企业</p>
+							<div class="flex number">
+								<p v-text="unexecut"></p>
+								<p>家</p>
+							</div>
+						</div>
+						<div id="demo6" class="mui-progressbar">
+							<span></span>
+						</div>
+						<!-- <div class="flex y1" style="margin-top: 25px;">
+							<p>执行停产限产企业</p>
+							<div class="flex number">
+								<p v-text="ysLimitProduct">0</p>
+								<p>家</p>
+							</div>
+						</div>
+						<div id="demo7" class="mui-progressbar">
+							<span></span>
+						</div>
+						<div class="flex y1">
+							<p>未按要求执行企业</p>
+							<div class="flex number">
+								<p v-text="ysUnexecut"></p>
+								<p>家</p>
+							</div>
+						</div>
+						<div id="demo8" class="mui-progressbar">
+							<span></span>
+						</div> -->
+					</div>
+				</div>
+				<div class="charts">
+					<div class="mui-segmented-control tab">
+						<a class="mui-control-item mui-active" href="#item1">AQI/错峰生产对比分析</a>
+						<!-- <a class="mui-control-item" href="#item2">用电量</a> -->
+					</div>
+					<div style="width:92%;height: 200px" id="Pbotchart"></div>
+				</div>
+				<!-- <div class="charts">
+					<div class="mui-segmented-control tab">
+						<a class="mui-control-item mui-active" id='sss' href="#item1">各行业异常企业占比</a>
+						<a class="mui-control-item" id="ss" href="#item2">各区域异常企业占比</a>
+					</div>
+					<div id="item1" class="md-f1 mui-slider-item mui-control-content detailInfos md-box md-ver mui-active">
+						<div style="width:92%; height:200px;" id="botchart_"></div>
+					</div>
+					<div id="item2" style="display: none;" class="md-f1 mui-slider-item mui-control-content detailInfos md-box md-ver">
+						<div style="width:92%; height:200px;" id="botchart"></div>
+					</div>
+				</div> -->
+			</div>
+			<div v-show="isInternet == 0">
+				<p class="tipword">没有网络了！可能是您的网络设置未开启</p>
+				<button type="button" id="refresh" class="mui-btn  tipbtn" @click="tryAgain()">点击重试</button>
+			</div>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/echarts.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: false //关闭back按键监听
+				},
+				pullRefresh: {
+					container: "#app", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+					down: {
+						style: 'circle', //必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
+						color: '#2BD009', //可选，默认“#2BD009” 下拉刷新控件颜色
+						height: '50px', //可选,默认50px.下拉刷新控件的高度,
+						range: '100px', //可选 默认100px,控件可下拉拖拽的范围
+						offset: '0px', //可选 默认0px,下拉刷新控件的起始位置
+						auto: false, //可选,默认false.首次加载自动上拉刷新一次
+						callback: function() { //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+							var ws = plus.webview.currentWebview();
+							ws.reload();
+							mui('#app').pullRefresh().endPulldownToRefresh(false);
+						}
+					}
+				}
+			})
+
+			var app = new Vue({
+				el: "#app",
+				data: {
+					isInternet: 1,
+					enterpriseNum: 0,
+					monitorNum: 0,
+					productMonitorNum: 0,
+					treatMonitorNum: 0,
+					abnormalNum: 0,
+					ysAbnormalNum: 0,
+					treatAbnormalNum: 0,
+					ysTreatAbnormalNum: 0,
+					limitProduct: 0,
+					ysLimitProduct: 0,
+					unexecut: 0,
+					ysUnexecut: 0,
+					dayHour: [],
+					kwh: [],
+					abnormalNum_list: [],
+					abnormalNumlist: [],
+					name: [],
+					names: [],
+					aqi: []
+				},
+				methods: {
+					/* qqq: function() {
+						var botchart = echarts.init(document.getElementById('botchart'));
+						botchart.resize();
+					} */
+				}
+			})
+
+			mui.plusReady(function() {
+				getdeviceStatus();
+				/* document.getElementById("ss").addEventListener("tap", function() {
+					document.getElementById("item2").style.display = "block";
+					document.getElementById("item1").style.display = "none";
+					origanchart();
+				})
+				document.getElementById("sss").addEventListener("tap", function() {
+					document.getElementById("item2").style.display = "none";
+					document.getElementById("item1").style.display = "block";
+					enterprisechart();
+				}) */
+			})
+
+
+			//企业详细信息,和产污治污的数量
+			function getindexInfo() {
+				mui.ajax(JTURL + '/environmental_intelligent_monitoring/homePage/queryEnterpriseReport', {
+					data: {
+						userId: localStorage.getItem("userId")
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						plus.nativeUI.closeWaiting();
+						// console.log(JSON.stringify(res));
+						if (res.code == 0) {
+							for (var i = 0; i < res.enterpriseNum.length; i++) {
+								app.enterpriseNum = res.enterpriseNum[i].enterpriseNum;
+								app.monitorNum = res.enterpriseNum[i].productMonitorNum + res.enterpriseNum[i].treatMonitorNum;
+								app.productMonitorNum = res.enterpriseNum[i].productMonitorNum
+								app.treatMonitorNum = res.enterpriseNum[i].treatMonitorNum
+							}
+							for (var i = 0; i < res.abnormalNum.length; i++) {
+								app.abnormalNum = res.abnormalNum[i].abnormalNum;
+								// app.ysAbnormalNum = res.abnormalNum[i].ysAbnormalNum
+								app.treatAbnormalNum = res.abnormalNum[i].treatAbnormalNum
+								// app.ysTreatAbnormalNum = res.abnormalNum[i].ysTreatAbnormalNum
+							}
+							mui("#demo1").progressbar({
+								progress: app.abnormalNum
+							}).show();
+							mui("#demo2").progressbar({
+								progress: app.treatAbnormalNum
+							}).show();
+							// mui("#demo3").progressbar({
+							// 	progress: app.ysAbnormalNum
+							// }).show();
+							// mui("#demo4").progressbar({
+							// 	progress: app.ysTreatAbnormalNum
+							// }).show();
+
+							for (var i = 0; i < res.productNum.length; i++) {
+								app.limitProduct = res.productNum[i].limitProduct + res.productNum[i].stopProduct;
+								app.unexecut = res.productNum[i].unexecut;
+								app.ysLimitProduct = res.productNum[i].ysLimitProduct + res.productNum[i].ysStopProduct
+								app.ysUnexecut = res.productNum[i].ysUnexecut
+							}
+							mui("#demo5").progressbar({
+								progress: app.limitProduct
+							}).show();
+							mui("#demo6").progressbar({
+								progress: app.unexecut
+							}).show();
+							// mui("#demo7").progressbar({
+							// 	progress: app.ysLimitProduct
+							// }).show();
+							// mui("#demo8").progressbar({
+							// 	progress: app.ysUnexecut
+							// }).show();
+
+
+							//AQI的折线图
+							for (var i = 0; i < res.AQIAndKwh.length; i++) {
+								app.dayHour.push(res.AQIAndKwh[i].dayHour)
+								app.kwh.push(res.AQIAndKwh[i].kwh);
+								app.aqi.push(res.AQIAndKwh[i].aqi);
+							}
+							var pechart = echarts.init(document.getElementById('Pbotchart'));
+							pechart.setOption({
+								xAxis: {
+									type: 'category',
+									data: app.dayHour
+								},
+
+								grid: {
+									left: '1%',
+									right: '1%',
+									bottom: '2%',
+									top: '30px',
+									containLabel: true
+								},
+								tooltip: {
+									trigger: 'axis'
+								},
+								legend: {
+									left: 'left',
+									data: ['用电量', 'AQI']
+								},
+								yAxis: {
+									type: 'value'
+								},
+								series: [{
+									name:'用电量',
+									data: app.kwh,
+									type: 'line'
+								}, {
+									name:"AQI",
+									data: app.aqi,
+									type: 'line'
+
+								}]
+
+							}, true)
+
+							//各行业企业占比
+							var total;
+							for (var i = 0; i < res.abnormalTradeNum.length; i++) {
+								total = res.abnormalTradeNum[i].abnormalNum + res.abnormalTradeNum[i].abnormalNum;
+								value = res.abnormalTradeNum[i].abnormalNum / total
+								var obj = {}
+								obj.name = res.abnormalTradeNum[i].name;
+								obj.value = res.abnormalTradeNum[i].abnormalNum
+								app.abnormalNum_list.push(obj)
+								app.name.push(res.abnormalTradeNum[i].name);
+							}
+							// enterprisechart();
+
+
+
+							//各区域企业占比
+							var totals
+							for (var i = 0; i < res.abnormalOrganizeNum.length; i++) {
+								total = res.abnormalOrganizeNum[i].abnormalNum + res.abnormalOrganizeNum[i].abnormalNum;
+								value = res.abnormalOrganizeNum[i].abnormalNum / totals
+								var obj = {}
+								obj.name = res.abnormalOrganizeNum[i].name;
+								obj.value = res.abnormalOrganizeNum[i].abnormalNum
+								app.abnormalNumlist.push(obj)
+								app.names.push(res.abnormalOrganizeNum[i].name);
+							}
+
+
+
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+
+					}
+				});
+			}
+
+			//各区域企业占比
+			function origanchart() {
+				var botchart = echarts.init(document.getElementById('botchart'));
+				botchart.setOption({
+					legend: {
+						x: 'left',
+						type: 'scroll',
+						orient: 'horizontal',
+						data: app.names
+					},
+					tooltip: {
+						trigger: 'item',
+						formatter: "{b}:({d}%)"
+					},
+					series: [{
+						type: 'pie',
+						radius: ['40%', '70%'],
+						avoidLabelOverlap: false,
+						label: {
+							normal: {
+								show: false,
+								position: 'center'
+							},
+							emphasis: {
+								show: true,
+								textStyle: {
+									fontSize: '10',
+									fontWeight: 'bold'
+								}
+							},
+							labelLine: {
+								normal: {
+									show: false
+								}
+							}
+						},
+						data: app.abnormalNumlist
+					}]
+				}, true);
+			}
+			//各企业占比
+			function enterprisechart() {
+				// var echarted = echarts.init(document.getElementById('botchart_'));
+				echarted.setOption({
+					textStyle: {
+						fontSize: 10,
+						fontWeight: 'bold'
+					},
+					legend: {
+						x: 'left',
+						type: 'scroll',
+						orient: 'horizontal',
+						data: app.name
+					},
+					tooltip: {
+						trigger: 'item',
+						formatter: "{b}:({d}%)"
+					},
+					series: [{
+						type: 'pie',
+						radius: ['40%', '70%'],
+						avoidLabelOverlap: false,
+						label: {
+							normal: {
+								show: false,
+								position: 'center'
+							},
+							emphasis: {
+								show: true,
+								textStyle: {
+									fontSize: '10',
+									fontWeight: 'bold'
+								}
+							},
+							labelLine: {
+								normal: {
+									show: false
+								}
+							}
+						},
+						data: app.abnormalNum_list
+					}]
+				}, true);
+
+			}
+
+			function getdeviceStatus() {
+				var types = {};
+				//未知网络
+				types[plus.networkinfo.CONNECTION_UNKNOW] = "Unknown connection";
+				//无网络
+				types[plus.networkinfo.CONNECTION_NONE] = "None connection";
+				//以太网
+				types[plus.networkinfo.CONNECTION_ETHERNET] = "Ethernet connection";
+				//wifi
+				types[plus.networkinfo.CONNECTION_WIFI] = "WiFi connection";
+
+				//wifi连接
+				if (types[plus.networkinfo.getCurrentType()] == types[plus.networkinfo.CONNECTION_NONE] || types[plus.networkinfo
+						.getCurrentType()] ==
+					types[plus.networkinfo.CONNECTION_UNKNOW]) {
+					// 无网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					setTimeout(function() {
+						plus.nativeUI.closeWaiting();
+						app.isInternet = 0
+					}, 3000)
+
+				} else {
+					// 有网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					app.isInternet = 1;
+					getindexInfo();
+
+				}
+			}
+
+			window.addEventListener("refresh", function() {
+				// console.log("index_刷新了");
+				indexs = plus.webview.getWebviewById("index_");
+				indexs.show();
+				var ws = plus.webview.currentWebview();
+				ws.reload();
+			}, {
+				passive: false
+			})
+		</script>
+	</body>
+
+</html>

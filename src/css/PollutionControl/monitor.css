@@ -1,0 +1,30 @@
+@charset "utf-8";
+.total{
+	justify-content: space-around;
+	background: rgb(193,222,194);
+	margin-top: 20px;
+}
+.banner{
+	/* justify-content: space-around; */
+	 background: rgb(193,222,194); 
+	text-align: center;
+	margin-top: 50px;
+	padding: 10px 0px;
+}
+.name{
+	font-size: 18px;
+}
+.bar{
+	text-align: center;
+}
+.chart{
+	width: 95%;
+	margin-top: 10px;
+	border-radius: 10px;
+	margin-left: 2.5%;
+	background: white;
+}
+.chart p{
+	margin: 10px;
+	padding-top:10px ;
+}

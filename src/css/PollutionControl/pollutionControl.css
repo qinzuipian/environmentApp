@@ -1,0 +1,139 @@
+@charset "utf-8";
+#map {
+	width: 100%;
+	height: 12.5rem;
+	overflow: hidden;
+}
+#_company{
+	overflow: scroll;
+	/* height: 12.5rem; */
+}
+
+.search {
+	width: calc(70% - 10px);
+	margin: 0px 0 0px 5px;
+	line-height: 3.125rem;
+	border-radius: 5px;
+}
+
+.mui-icon {
+	line-height: 1.5;
+}
+
+.industry {
+	width: 15%;
+	/* background: white; */
+	line-height: 3.125rem;
+	border-right: 1px solid white;
+}
+
+
+/* .status{
+	width: 15%;
+	background: white;
+
+
+line-height: 3.125rem;
+
+
+}
+*/ .industry p {
+	text-align: center;
+	color: white;
+	margin: 0px;
+}
+
+/* .status p {
+	text-align: center;
+	color: white;
+	margin: 0px;
+} */
+.icon {
+	color: green;
+	font-size: 20px;
+	margin: 0px 4px 0px 6px;
+	line-height: 31px;
+}
+.company_list {
+	line-height: 31px;
+}
+.company {
+	width: 95%;
+	margin-left: 2.5%;
+	/*margin-top: 100px;*/
+	/* height: 170px; */
+	
+	background: white;
+	border: 0.5px solid gainsboro;
+	border-radius: 4px;
+	margin-bottom: 10px;
+}
+.title {
+	/* background: rgb(238, 243, 249); */
+	background: rgb(193,222,194);
+	line-height: 1.875rem;
+	padding-left: 6px;
+	border-right: 0.5px solid gainsboro;
+}
+.status {
+	width: 40px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	/* background: #33CCFF; */
+	background: green;
+	color: white;
+	margin-top: 5px;
+	margin-right: 6px;
+}
+.address {
+	color: gray;
+	font-size: 13px;
+	margin-left: 10px;
+}
+.organize {
+	width: 50%;
+}
+.trade {
+	color: gray;
+	font-size: 13px;
+}
+.name {
+	margin-left: 6px;
+	color: #000000;
+	font-size: 15px;
+}
+.company_bar {
+	border-bottom: 1px solid gainsboro;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+.data_status p:nth-child(2) {
+	font-size: 12px;
+	text-align: center;
+	margin-top: 0px;
+}
+.data_status p:nth-child(1) {
+	font-size: 14px;
+	text-align: center;
+	margin-top: 10px;
+	color: #008000;
+}
+.mui-btn {
+	line-height: 10px;
+	font-size: 12px;
+	margin-top: 10px;
+	margin-right: 10px;
+	margin-bottom: 15px;
+}
+.unstatus {
+	width: 40px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	background: red;
+	color: white;
+	margin-top: 5px;
+	margin-right: 6px;
+}
+

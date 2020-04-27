@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../css/login.css" />
+	</head>
+
+	<body>
+		<div id="app">
+			<div class="bg" id="imgs">
+				<div class="form" style="z-index: 99;padding-top: 200px;">
+					<form class="mui-input-group">
+						<div class="mui-input-row">
+							<label>用户名</label>
+							<input type="text" id="name" class="mui-input-clear" placeholder="请输入用户名">
+						</div>
+						<div class="mui-input-row">
+							<label>密码</label>
+							<input type="password" id="pwd" class="mui-input-password" placeholder="请输入密码">
+						</div>
+						<button type="button" id="login" class="mui-btn mui-btn-success login" data-loading-text="正在登陆...">登录</button>
+					</form>
+				</div>
+			</div>
+
+		</div>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: false //关闭back按键监听
+				}
+			})
+
+			mui.plusReady(function() {
+				var names = document.getElementById("name");
+				var pwds = document.getElementById("pwd");
+				var login = document.getElementById("login");
+				getheight();
+
+				mui(document.body).on('tap', '.mui-btn', function(e) {
+					var this_ = this;
+					var name = document.getElementById("name").value;
+
+					var pwd = document.getElementById("pwd").value;
+					// var  name = "admin";
+					// var pwd = "1"
+					setTimeout(function() {
+						if (name == "" || pwd == "" || name == "" && pwd == "") {
+							names.blur()
+							pwds.blur()
+							mui.toast('请输入账号和密码')
+						} else {
+							names.blur()
+							pwds.blur()
+							mui(this).button('loading');
+							plus.nativeUI.showWaiting("登录认证中...");
+							tologin(name, pwd, this_)
+						}
+					}.bind(this), 1000);
+				});
+
+			})
+
+
+
+
+			function getheight() {
+				var mobileHeight = window.innerHeight + "px";
+				document.getElementById("imgs").style.height = mobileHeight;
+			}
+
+			function tologin(name, pwd, this_) {
+				console.log(name);
+				console.log(pwd);
+				var data = JSON.stringify({
+					password: pwd,
+					username: name
+				})
+				mui.ajax(JTURL + '/sys-mgr/sys/login', {
+					data: data,
+					dataType: 'json', //服务器返回json格式数据
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						console.log(JSON.stringify(res));
+						plus.nativeUI.closeWaiting();
+						if (res.code == 0) {
+						// 	var wvs=plus.webview.all();
+						// 		for(var i=0;i<wvs.length;i++){
+						// 			console.log('webview'+i+': '+wvs[i].getURL());
+						// 		}
+							mui(this_).button('reset');
+							window.localStorage.setItem("token", res.token)
+							window.localStorage.setItem("userId",res.user.userId);
+							var indexed = plus.webview.getWebviewById(plus.runtime.appid);
+							mui.fire(indexed, 'refresh');
+							plus.webview.show(indexed);
+							reloadIndex();
+							var ws = plus.webview.currentWebview();
+							plus.webview.close(ws);
+						} else {
+							mui(this_).button('reset');
+							mui.toast(res.msg)
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

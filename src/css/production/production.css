@@ -1,0 +1,48 @@
+@charset "utf-8";
+.bars{
+	width: 100%;
+	padding-left: 5%; 
+	padding-right: 10%;
+	
+	justify-content: space-between;
+	background: gainsboro;
+	line-height: 40px;
+	margin-bottom: 20px;
+}
+.bars p{
+	font-size: 14px;
+}
+.com {
+	line-height: 30px;
+	font-size: 15px;
+}
+.company{
+	width: 95%;
+	margin-left: 2.5%;
+	border-radius: 10px;
+	background: white;
+	margin-bottom: 10px;
+	padding-bottom: 4px;
+}
+.data_list{
+	padding-top: 6px;
+	justify-content: space-around;
+	margin-bottom: 10px;
+}
+.mui-btn {
+	line-height: 10px;
+	font-size: 12px;
+	/* margin-top: 10px; */
+	margin-right: 10px;
+	margin-bottom: 15px;
+	background: #008000;
+	color: white;
+}
+.name{
+	background: rgb(193,222,194);
+	line-height: 1.875rem;
+	padding-left: 1.25rem;
+	border-radius:10px ;
+	margin-bottom: 4px;
+	color: black;
+}

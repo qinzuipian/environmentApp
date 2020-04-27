@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>错峰生产详情</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" type="text/css" href="../css/production/productionDetail.css" />
+	</head>
+
+	<body>
+		<div id="app">
+			<div v-show="isInternet == 0">
+				<p class="tipword">没有网络了！可能是您的网络设置未开启</p>
+				<button type="button" id="refresh" class="mui-btn mui-btn-warning tipbtn" @click="tryAgain()">点击重试</button>
+			</div>
+			<p style="margin-top: 100px ; text-align: center;" v-show="All_length == 0 && isInternet == 1">暂无数据</p>
+
+			<header class="mui-bar mui-bar-nav header-blue">
+				<a style="padding-top: 10px;" class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+				<h1 class="mui-title" v-text="companyName"></h1>
+				<span class="mui-icon mui-pull-right mui-icon-search" style="padding-top: 10px;" id="searchDate"></span>
+			</header>
+			<div class="flex bar" v-show="All_length == 1 && isInternet == 1">
+				<p style="padding-left: 20px;">日期</p>
+				<p>目标符合(%)</p> 
+				<p>当天负荷(Kw.h)</p>
+				<p>是否违规</p>
+			</div>
+			<div class="data" v-show="All_length == 1 && isInternet == 1">
+				<div class="flex data_list" v-for="(it,index) in company_list">
+					<p v-text="it.tDateTime"></p> 
+					<p v-text="it.targetLoad"></p>
+					<p v-text="it.nowaDaysLoad"></p>
+					<p v-text="it.violation" v-if="it.violation == '正常'" style="color: black;"></p>
+					<!-- <button class="mui-btn" v-if="it.violation == '正常'" style="visibility: hidden;"></button> -->
+					<p v-text="it.violation" v-if="it.violation == '异常'" style="color: red;"></p>
+					<!-- <button class="mui-btn" style="visibility: hidden;"  v-if="it.violation == '异常'" @click="find(it)"></button> -->
+				</div>
+			</div>
+		</div>
+		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			mui.init({
+				swipeBack: false, //启用右滑关闭功能,
+				keyEventBind: {
+					backbutton: true //关闭back按键监听
+				}
+			})
+			var app = new Vue({
+				el: "#app",
+				data: {
+					company_list: [],
+					companyName: "",
+					All_length: 1,
+					isInternet: 1,
+					startdate:"",
+					enddate:""
+				},
+				methods: {
+					find: function(it) {
+						var find = plus.webview.create("./item_alarm.html", "item_alarm", {}, {
+							ids: it.enterpriseId,
+							name: it.enterpriseName
+						})
+						plus.webview.show(find, "slide-in-right", 300)
+					},
+					tryAgain: function() {
+						getdeviceStatus();
+					}
+				}
+			})
+			mui.plusReady(function() {
+				var companyId = plus.webview.currentWebview();
+				app.companyName = companyId.name;
+				app.companyId = companyId.ids
+				getdeviceStatus(); 
+				var searchDate = document.getElementById("searchDate");
+				searchDate.addEventListener("tap", function() {
+					var searchDate = plus.webview.create("./searchDate.html");
+					plus.webview.show(searchDate, "slide-in-right", 300);
+				}, {
+					passive: false
+				})
+			})
+
+			//获取企业异常的信息
+			function getcom() {
+				mui.ajax(JTURL + 'environmental_intelligent_monitoring/twrpimplementation/list', {
+					data: {
+						enterpriseId: app.companyId,
+						limit:100000,
+						userId:localStorage.getItem("userId"),
+						startCreateDate: app.startdate,
+						endCreateDate: app.enddate,
+					},
+					dataType: 'json', //服务器返回json格式数据
+					type: 'post', //HTTP请求类型
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(res) {
+						console.log(JSON.stringify(res));
+						plus.nativeUI.closeWaiting();
+						if (res.code == 0) {
+							app.company_list = res.page.list;
+							for (var i = 0; i < res.page.list.length; i++) {
+								if (res.page.list[i].violation == 0) {
+									app.company_list[i].violation = "正常"
+								} else {
+									app.company_list[i].violation = "异常"
+								}
+								res.page.list[i].tDateTime = res.page.list[i].tDateTime.split(" ");
+								app.company_list[i].tDateTime = app.company_list[i].tDateTime[0]
+							}
+							if (app.company_list.length == 0) {
+								app.All_length = 0
+							} else {
+								app.All_length = 1
+							}
+						}
+					},
+					error: function(xhr, type, errorThrown) {
+						plus.nativeUI.closeWaiting();
+					}
+				});
+			}
+
+			function getdeviceStatus() {
+				var types = {};
+				//未知网络
+				types[plus.networkinfo.CONNECTION_UNKNOW] = "Unknown connection";
+				//无网络
+				types[plus.networkinfo.CONNECTION_NONE] = "None connection";
+				//以太网
+				types[plus.networkinfo.CONNECTION_ETHERNET] = "Ethernet connection";
+				//wifi
+				types[plus.networkinfo.CONNECTION_WIFI] = "WiFi connection";
+
+				//wifi连接
+				if (types[plus.networkinfo.getCurrentType()] == types[plus.networkinfo.CONNECTION_NONE] || types[plus.networkinfo.getCurrentType()] ==
+					types[plus.networkinfo.CONNECTION_UNKNOW]) {
+					// 无网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					setTimeout(function() {
+						plus.nativeUI.closeWaiting();
+						app.isInternet = 0
+					}, 3000)
+
+				} else {
+					// 有网络
+					plus.nativeUI.showWaiting("数据加载中...");
+					app.isInternet = 1;
+					getcom();
+
+				}
+			}
+			
+			window.addEventListener("get_data", function(e) {
+				console.log(JSON.stringify(e.detail.startdate));
+				console.log(JSON.stringify(e.detail.startdate));
+				app.startdate = e.detail.startdate;
+				app.enddate = e.detail.enddate;
+				getcom();
+			})
+		</script>
+	</body>
+
+</html>
