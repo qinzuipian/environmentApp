@@ -32,13 +32,13 @@
 					</div>
 				</div>
 			</div>
-			<div class="chart" v-show="isInternet == 1">
+		<!-- 	<div class="chart" v-show="isInternet == 1">
 				<p>功率</p>
 				<div style="width:92%;height: 200px" id="Pbotchart"></div>
-			</div>
+			</div> -->
 			<div class="chart" v-show="isInternet == 1">
 				<p>企业总用电</p>
-				<div style="width:92%;height: 200px" id="Abotchart"></div>
+				<div style="width:100%;height: 200px" id="Abotchart"></div>
 			</div>
 			<!-- <div class="chart">
 				<p>产污设施运行情况</p>
@@ -186,7 +186,7 @@
 			function getmonitordate() {
 				app.kw_listx = []
 				app.kw_listy = []
-				console.log(app.allmonitorid);
+				// console.log(app.allmonitorid);
 				mui.ajax(JTURL + '/environmental_intelligent_monitoring/tdevicehistory/queryMonitoringPowerCurve', {
 					data: {
 						flag: "2",
@@ -208,7 +208,7 @@
 								app.kw_listx = []
 								app.kw_listy = []
 							}
-							kwchart();
+							// kwchart();
 						} else {
 							mui.toast(res.mag)
 						}
@@ -266,7 +266,7 @@
 					timeout:10000,//超时时间设置为10秒；
 					success:function(res){
 						plus.nativeUI.closeWaiting();
-						console.log(JSON.stringify(res));
+						// console.log(JSON.stringify(res));
 						if(res.code == 0){
 							for (var i = 0; i < res.page.list.length; i++) {
 								app.conmpanyname = res.page.list[i].enterpriseName;

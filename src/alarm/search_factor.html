@@ -8,6 +8,7 @@
 		<link href="../../css/mui.min.css" rel="stylesheet" />
 		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
 		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
+		<link rel="stylesheet" href="../../css/element.css">
 		<link rel="stylesheet" type="text/css" href="../css/alarm/search_factor.css" />
 		<link rel="stylesheet" type="text/css" href="../../css/mui.picker.min.css" />
 		<link rel="stylesheet" type="text/css" href="../../css/mui.poppicker.css" />
@@ -20,10 +21,11 @@
 		</header>
 		<div id="app">
 			<form class="mui-input-group">
-				<div class="mui-input-row" >
+				<div class="mui-input-row ulMain" >
 					<label>企业名称</label>
-					<span class="mui-icon mui-pull-right mui-icon-bars mui-pull-center" id="companyname" style="padding-top: 10px; width: 20%;" ></span>
-					<input type="text" style="height: 60px;  width: 45%;" disabled="disabled" v-model="compamy" placeholder="请选择企业名称">
+					<!-- <span class="mui-icon mui-pull-right mui-icon-bars mui-pull-center" id="companyname" style="padding-top: 10px; width: 20%;" ></span> -->
+					<!-- <input type="text" id="searchEnprise" style="height: 60px;  width: 45%;" v-model="compamy" placeholder="请选择企业名称"> -->
+					 <el-autocomplete v-model="compamy" style="top: 0.625rem;" :fetch-suggestions="querySearchAsync" placeholder="请选择" @select="handleSelect"></el-autocomplete>
 				</div>
 				<div class="mui-input-row">
 					<label>报警开始日期</label>
@@ -42,6 +44,11 @@
 					<span class="mui-icon mui-pull-right mui-icon-bars mui-pull-center" id="alarm_type" style="padding-top: 10px; width: 20%;" ></span>
 					<input type="text" style="height: 60px;width: 45%;" v-model="alarm_type" disabled="disabled" placeholder="请选择报警类型">
 				</div>
+				<div class="mui-input-row" id="currentStatus">
+					<label>审批状态</label>
+					<span class="mui-icon mui-pull-right mui-icon-bars mui-pull-center" id="currentStatus" style="padding-top: 10px; width: 20%;" ></span>
+					<input type="text" style="height: 60px;width: 45%;" v-model="currentText" disabled="disabled" placeholder="请选择审批状态">
+				</div>
 				
 			</form>
 			<div class="flex">
@@ -52,6 +59,7 @@
 		</div>
 		<script src="../../js/mui.min.js"></script>
 		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/element.js"></script>
 		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../../js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../../js/mui.poppicker.js" type="text/javascript" charset="utf-8"></script>
@@ -71,6 +79,9 @@
 				data: {
 					date: '',
 					alarm_type: "",
+					// 审批状态
+					currentStatus:"",
+					currentText:"",
 					compamy:"",
 					alarmType_list:[],
 					company_list:[],
@@ -78,13 +89,57 @@
 					pickcompanylist:[],
 					cnames:""
 				},
+				watch:{
+				
+				},
 				methods:{
 					search:function(){
-						if(app.alarm_type == "" && app.date == "" && app.compamy == "" && app.enddate == ""){
+						if(app.alarm_type == "" && app.date == "" && app.compamy == "" && app.enddate == "" && app.currentStatus==""){
 							mui.toast('请输入搜索条件')
 						}else{
 							getconmpany();
 						}
+					},
+					  // 企业远程搜索框
+					querySearchAsync(queryString, callback) {
+					    var list = [{}];
+					  	mui.ajax(JTURL + 'environmental_intelligent_monitoring/tbasenterprise/list?limit=10000',{
+					  	data:{
+					  		userId: localStorage.getItem("userId"),
+							name: queryString,
+					  	},
+					  	dataType:'json',//服务器返回json格式数据
+					  	type:'post',//HTTP请求类型
+					  	timeout:10000,//超时时间设置为10秒；
+					  	success:function(res){
+					        if (res.code == 0) {
+					            var datalist = res.page.list;
+					           /* for (let i = 0, len = datalist.length; i < len; i++) {
+					                for (let j = i + 1; j < len; j++) {
+					                    if (datalist[i].enterpriseId == datalist[j].enterpriseId) {
+					                        datalist.splice(j, 1);
+					                        // splice 会改变数组长度，所以要将数组长度 len 和下标 j 减一
+					                        len--;
+					                        j--;
+					                    }
+					                }
+					            } */
+					            // // console.log(datalist)
+					            for (let i of datalist) {
+					                i.value = i.name; //将想要展示的数据作为value
+					                // // console.log(i.value)
+					            }
+					            list = datalist;
+					            callback(list);
+					        } else {
+					
+					        }
+					    }
+					})
+					},
+					handleSelect(item) {
+					    // console.log(JSON.stringify(item));
+					    app.compamy = item.name;
 					}
 				}
 			})
@@ -93,7 +148,7 @@
 				init();
 				initType(); 
 				btn_type();
-				getcompanylist();
+				// getcompanylist();
 			})
 			//报警日期
 			function init() {
@@ -176,20 +231,44 @@
 					);
 					picker.show(function(selectItems) {
 						app.alarm_type = selectItems[0].text; //智子 
-						console.log(selectItems[0].text);
+						// console.log(selectItems[0].text);
 					})
 				}, {
 					passive: false
 				})
 			}
 			
+			// 审批状态
+			var currentStatus = document.getElementById("currentStatus");
+			currentStatus.addEventListener("tap", function() {
+				var picker = new mui.PopPicker();
+				picker.setData(
+					[
+						{value:'0',text:'未处理'},
+						{value:'1',text:'已处理未申报'},
+						{value:'2',text:'已申报未审核'},
+						{value:'3',text:'审核通过'},
+						{value:'4',text:'审核未通过'},
+						{value:'5',text:'已处理（不需要申报）'},
+					]
+				);
+				picker.show(function(selectItems) {
+					// console.log(JSON.stringify(selectItems))
+					app.currentText = selectItems[0].text; 
+					app.currentStatus = selectItems[0].value;
+				})
+			}, {
+				passive: false
+			})
+			
 			function btn_type(){
 				var clear = document.getElementById("clear");
 				clear.addEventListener("tap",function(){
-					app.date = ""
+					app.date = "";
 					app.alarm_type = "";
-					app.compamy = "",
-					app.enddate = ""
+					app.compamy = "";
+					app.enddate = "";
+					app.currentStatus = "";
 				},{passive:false})
 			}
 			
@@ -200,12 +279,13 @@
 					name:app.compamy,
 					date:app.date,
 					type:app.alarm_type,
-					end:app.enddate
+					end:app.enddate,
+					currentStatus:app.currentStatus
 				});
 				mui.back();
 			}
 			
-			function getcompanylist(){
+			/*function getcompanylist(){
 				mui.ajax(JTURL + 'environmental_intelligent_monitoring/tbasenterprise/list?limit=10000',{
 					data:{
 						userId: localStorage.getItem("userId")
@@ -227,7 +307,9 @@
 						
 					}
 				});
-				var companyname = document.getElementById("companyname");
+				
+			
+				 var companyname = document.getElementById("companyname");
 				companyname.addEventListener("tap", function() {
 					var picker = new mui.PopPicker();
 					picker.setData(
@@ -239,8 +321,11 @@
 					})
 				}, {
 					passive: false
-				})
-			}
+				}) 
+			}*/
+			/* document.getElementById("searchEnprise").addEventListener('focus',function() {
+				getcompanylist();
+			}) */
 			
 			
 		</script>

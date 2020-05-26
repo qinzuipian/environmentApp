@@ -7,15 +7,12 @@
 		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
 		<link href="css/mui.css" rel="stylesheet" />
 		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css" />
+		<link rel="stylesheet" href="../../css/element.css">
 		<link rel="stylesheet" type="text/css" href="../../css/mui.picker.min.css" />
 		<link rel="stylesheet" type="text/css" href="../../css/mui.poppicker.css" />
 		<link rel="stylesheet" type="text/css" href="../../css/common.css" />
 		<link rel="stylesheet" type="text/css" href="../css/PollutionControl/pollutionControl.css" />
-
 	</head>
-
-
-
 	<body>
 		<header class="mui-bar mui-bar-nav header-blue">
 			<h1 class="mui-title">总体监控</h1>
@@ -27,6 +24,10 @@
 				<div class="flex" style="margin-left: 2.5%;">
 					<p class="mui-icon-map mui-icon icon"></p>
 					<p class="company_list">企业列表</p>
+				</div>
+				<div style="text-align: center;">
+					<el-autocomplete v-model="companyList" :fetch-suggestions="querySearchAsync" placeholder="请选择企业名称" @select="handleSelect"></el-autocomplete>
+					<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="margin-right: 26%;" id="searchFactor"></span> -->
 				</div>
 				<div class="company" v-for="(it,index) in company" @click="searchCom(it)">
 					<div class="title flex" style="justify-content: space-between;">
@@ -48,7 +49,7 @@
 					<div class="flex data_status" style="justify-content: space-around;">
 						<div>
 							<p v-text="it.produceType"></p>
-							<p>生产状态</p>
+							<p>停限产计划</p>
 						</div>
 						<div>
 							<p v-text="it.productMonitorNum">4</p>
@@ -64,7 +65,7 @@
 						</div>
 					</div>
 					<div class="flex" style="justify-content: flex-end;">
-						<button type="button" class="mui-btn mui-btn-outlined" @click="pollutuionMonitor(it)">产污设施监控</button>
+						<button type="button" class="mui-btn mui-btn-outlined" @click="pollutuionMonitor(it)">设施监控</button>
 						<button type="button" class="mui-btn mui-btn-outlined" @click="monitor(it)">企业监控</button>
 					</div>
 				</div>
@@ -83,6 +84,7 @@
 		<script src="../../js/mui.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../../js/vue.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/element.js"></script>
 		<script src="../../js/mui.picker.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../../js/mui.poppicker.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
@@ -119,14 +121,21 @@
 				el: '#app',
 				data: {
 					company: [],
+					companyList:"",
 					adds: [],
 					All_length: 1,
 					isInternet: 1
 				},
+				watch:{
+					companyList:function(val) {
+						// console.log(val);
+						getCompany(val);
+					}
+				},
 				methods: {
 					searchCom: function(it) {
 						var point = new BMap.Point(it.longitude, it.latitude);
-						map.centerAndZoom(point, 16);
+						// map.centerAndZoom(point, 16);
 					},
 					//产污设施监控
 					pollutuionMonitor: function(it) {
@@ -145,6 +154,47 @@
 					tryAgain: function() {
 						getdeviceStatus();
 
+					},
+					  // 企业远程搜索框
+					querySearchAsync(queryString, callback) {
+					    var list = [{}];
+					  	mui.ajax(JTURL + 'environmental_intelligent_monitoring/tbasenterprise/list?limit=10000',{
+					  	data:{
+					  		userId: localStorage.getItem("userId"),
+							name: queryString,
+					  	},
+					  	dataType:'json',//服务器返回json格式数据
+					  	type:'post',//HTTP请求类型
+					  	timeout:10000,//超时时间设置为10秒；
+					  	success:function(res){
+					        if (res.code == 0) {
+					            var datalist = res.page.list;
+					           /* for (let i = 0, len = datalist.length; i < len; i++) {
+					                for (let j = i + 1; j < len; j++) {
+					                    if (datalist[i].enterpriseId == datalist[j].enterpriseId) {
+					                        datalist.splice(j, 1);
+					                        // splice 会改变数组长度，所以要将数组长度 len 和下标 j 减一
+					                        len--;
+					                        j--;
+					                    }
+					                }
+					            } */
+					            // // console.log(datalist)
+					            for (let i of datalist) {
+					                i.value = i.name; //将想要展示的数据作为value
+					                // // console.log(i.value)
+					            }
+					            list = datalist;
+					            callback(list);
+					        } else {
+					
+					        }
+					    }
+					})
+					},
+					handleSelect(item) {
+					    // console.log(JSON.stringify(item));
+					    app.companyList = item.name;
 					}
 				}
 
@@ -180,15 +230,20 @@
 						if (res.code == 0) {
 							if (res.data.children != "") {
 								for (var i = 0; i < res.data.children.length; i++) {
-									if (res.data.children[i].type == "t_device_monitor_all") {
-										var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
-											allmonitorid: res.data.children[i].id,
-											conpanyid: res.data.id
-										});
-										plus.webview.show(monitor, "slide-in-right", 300);
-									} else if (res.data.children[i].type != "t_device_monitor_all") {
-										mui.toast("该企业暂无企业数据")
-									}
+									var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
+										allmonitorid: res.data.children[i].id,
+										conpanyid: res.data.id
+									});
+									plus.webview.show(monitor, "slide-in-right", 300);
+									// if (res.data.children[i].type == "t_device_monitor_all") {
+									// 	var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
+									// 		allmonitorid: res.data.children[i].id,
+									// 		conpanyid: res.data.id
+									// 	});
+									// 	plus.webview.show(monitor, "slide-in-right", 300);
+									// } else if (res.data.children[i].type != "t_device_monitor_all") {
+									// 	mui.toast("该企业暂无企业数据")
+									// }
 								}
 							} else if (res.data.children == "") {
 								mui.toast("该企业暂无企业数据")
@@ -210,13 +265,12 @@
 				if (app.company.length == 0) {
 					centerPoint = [114.504434, 37.069162];
 					app.All_length = 0
-
 				} else {
 					centerPoint = [app.company[0].longitude, app.company[0].latitude]
 					app.All_length = 1
 				}
 
-				map = new BMap.Map("map");
+				var map = new BMap.Map("map");
 				var point = new BMap.Point(centerPoint[0], centerPoint[1]);
 				map.addControl(new BMap.NavigationControl()); //缩放的尺寸显示 比如1公里
 				map.addControl(new BMap.ScaleControl()); // 创建标注
@@ -225,12 +279,22 @@
 				geoc = new BMap.Geocoder();
 
 				for (var i = 0; i < app.company.length; i++) {
+						var myIcon = null;
 					var _point = new BMap.Point(app.company[i].longitude, app.company[i].latitude);
-					addMarker(_point);
+					if (app.company[i].status == "3") {
+						// console.log('ok')
+						// http://api.map.baidu.com/img/markers.png
+						myIcon = new BMap.Icon(
+							"./../../img/markers.png",
+							new BMap.Size(23, 25), {
+							offset: new BMap.Size(10, 25),
+							imageOffset: new BMap.Size(0, 0 - 10 * 25)
+						});
+					}
+					addMarker(_point,{ icon: myIcon });
 				};
-
-				function addMarker(_point) {
-					var marker = new BMap.Marker(_point);
+				function addMarker(_point,img) {
+					var marker = new BMap.Marker(_point,img);
 					map.addOverlay(marker);
 					// 给标注上添加点击事件
 					marker.addEventListener("click", function(e) {
@@ -239,6 +303,7 @@
 								map.removeOverlay(label)
 								createInfoWindow(app.company[i], _point);
 							}
+							
 						}
 					});
 				}
@@ -270,42 +335,46 @@
 				// console.log(screenHeight);
 				var company_high = screenHeight - (44 + 230 + 60);
 				document.getElementById("_company").style.height = company_high + "px";
-
-				// var searchFactor = document.getElementById("searchFactor");
-				// searchFactor.addEventListener("tap", function() {
-				// 	var searchFactor = plus.webview.create("./search_factor.html", "search_factor")
-				// 	plus.webview.show(searchFactor, "slide-in-right", 300);
-				// }, {
-				// 	passive: false
-				// })
 			}
 				
 			function pullupRefresh() {
 				  setTimeout(function () {
                      mui('#app').pullRefresh().endPullupToRefresh((isOver)); //参数为true代表没有更多数据了。           
                 }, 500);
-				getCompany();//ajax
+				
+				if(isOver == false) {
+					getCompany();//ajax
+				}
 			}
 			 var pageStart = 1;//开始数据条数
 			 var pageSize = 10;//每页显示条数
 			 var isOver = false;//是否加载完
 	
 			//获取异常企业的状态
-			function getCompany() {
-				// console.log(pageStart)
+			function getCompany(val) {
+				plus.nativeUI.showWaiting("数据加载中...");
+				var data = {};
+				if(val) {
+					app.company=[];
+					data.userId = localStorage.getItem("userId");
+					data.page = 1;
+					data.enterpriseName = val;		
+				} else {
+					data.userId = localStorage.getItem("userId");
+					data.page = pageStart;
+				}
 				mui.ajax(JTURL + 'environmental_intelligent_monitoring/dataMonitor/queryEnterpriseReportList', {
-					data: {
+					/* data: {
 						userId:localStorage.getItem("userId"),
 						page:pageStart
-						
-					},
+					}, */
+					data:data,
 					dataType: 'json', //服务器返回json格式数据
 					type: 'post', //HTTP请求类型
 					timeout: 10000, //超时时间设置为10秒；
 					success: function(res) {
-						plus.nativeUI.closeWaiting();
-						// console.log(JSON.stringify(res));
-						if (res.code == 0) {				
+						if (res.code == 0) {
+							plus.nativeUI.closeWaiting();
 							for (var i = 0; i < res.page.list.length; i++) {
 								res.page.list[i].address = res.page.list[i].province + res.page.list[i].city + res.page.list[i].area +
 									res.page.list[i].address;
@@ -339,7 +408,6 @@
 					}
 				});
 			}
-
 			function getdeviceStatus() {
 				var types = {};
 				//未知网络
@@ -362,8 +430,7 @@
 					}, 3000)
 
 				} else {
-					// 有网络
-					plus.nativeUI.showWaiting("数据加载中...");
+					// 有网络		
 					app.isInternet = 1;
 					mapInit()
 					init();
@@ -381,57 +448,6 @@
 			}, {
 				passive: false
 			});
-
-
-
-			//行业和状态的选择
-			// 			function init() {
-			// 				var industry = document.getElementById("industry");//行业
-			// 				var status = document.getElementById("status");//状态
-			// 				industry.addEventListener("tap", function() {
-			// 					console.log(1);
-			// 					var picker = new mui.PopPicker();
-			// 					picker.setData([{
-			// 						value: "first",
-			// 						text: "第一项"
-			// 					}, {
-			// 						value: "second",
-			// 						text: "第一项"
-			// 					}, {
-			// 						value: "third",
-			// 						text: "第三项"
-			// 					}, {
-			// 						value: "fourth",
-			// 						text: "第四项"
-			// 					}, {
-			// 						value: "fifth",
-			// 						text: "第五项"
-			// 					}]);
-			// 					picker.show(function(selectItems) {
-			// 						console.log(selectItems[0].text); //智子
-			// 						console.log(selectItems[0].value); //zz 
-			// 					})
-			// 				},{passive:false})
-			// 				status.addEventListener("tap", function() {
-			// 					var picker = new mui.PopPicker();
-			// 					picker.setData([{
-			// 						value: "first",
-			// 						text: "停产"
-			// 					}, {
-			// 						value: "second",
-			// 						text: "限产"
-			// 					}, {
-			// 						value: "third",
-			// 						text: "开始"
-			// 					}]);
-			// 					picker.show(function(selectItems) {
-			// 						console.log(selectItems[0].text); //智子
-			// 						console.log(selectItems[0].value); //zz 
-			// 					})
-			// 				},{passive:false})
-			// 
-			// 
-			// 			}
 		</script>
 	</body>
 

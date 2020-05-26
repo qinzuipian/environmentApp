@@ -197,7 +197,8 @@
 						text: '功率'
 					},
 					tooltip: {
-						trigger: 'axis'
+						trigger: 'axis',
+						position:["0%","30%"]
 					},
 					grid: {
 						left: '3%',
@@ -225,7 +226,8 @@
 						text: '周期电量'
 					},
 					tooltip: {
-						trigger: 'axis'
+						trigger: 'axis',
+						position:["0%","30%"]
 					},
 					grid: {
 						left: '3%',
@@ -254,7 +256,8 @@
 						text: app.morename 
 					},
 					tooltip: {
-						trigger: 'axis'
+						trigger: 'axis',
+						position:["0%","30%"]
 					},
 					grid: {
 						left: '3%',
@@ -366,7 +369,7 @@
 			}
 		     //更多参数的数据
 		    function more(){
-				console.log(app.date);
+				// console.log(app.date);
 				mui.ajax(JTURL + '/environmental_intelligent_monitoring/tdevicehistory/queryEnterpriseMoreParam',{
 					data:{
 						flag: app.flag,

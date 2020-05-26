@@ -73,6 +73,11 @@
 							ws.reload();
 							mui('#app').pullRefresh().endPulldownToRefresh(false);
 						}
+					},
+					up: {
+					    contentrefresh: '正在加载...',
+					    contentnomore:'我是有底线的',
+					    callback: pullupRefresh
 					}
 				}
 			})
@@ -86,7 +91,8 @@
 					date:"",
 					compamy:"",
 					type:"",
-					enddate:""
+					enddate:"",
+					currentStatus:""
 					
 				},
 				methods: {
@@ -124,45 +130,73 @@
 					passive: false
 				})
 			}
+			
+			function pullupRefresh() {
+				  setTimeout(function () {
+			         mui('#app').pullRefresh().endPullupToRefresh((isOver)); //参数为true代表没有更多数据了。           
+			    }, 500);
+				if(isOver == false) {
+					getconmpany();//ajax
+				}		
+			}
 			//获取企业数据的接口
-			function getconmpany() {
+			var pageStart = 1;//开始数据条数
+			var pageSize = 10;//每页显示条数
+			var isOver = false;//是否加载完
+			function getconmpany(val) {
+				if(val) {
+					pageStart = val;
+				}
+				plus.nativeUI.showWaiting("数据加载中...");
 				mui.ajax(JTURL + 'environmental_intelligent_monitoring/tfirmabnormal/list', {
 					data: {
-						limit: 100000,
+						// limit: 100000,
+						page :pageStart,
+						limit:10,
 						userId: localStorage.getItem("userId"),
 						enterpriseName: app.compamy,
 						startCreateDate: app.date,
 						eventType: app.type,
-						endCreateDate:app.enddate
+						endCreateDate:app.enddate,
+						currentStatus:app.currentStatus
 					},
 					dataType: 'json', //服务器返回json格式数据
 					type: 'post', //HTTP请求类型
 					timeout: 10000, //超时时间设置为10秒；
-					success: function(res) {
-						console.log(JSON.stringify(res.page.list.length))	
+					success: function(res) {	
+						// console.log(JSON.stringify(res))
 						if (res.code == 0) {
 							plus.nativeUI.closeWaiting();
-							app.company_list = res.page.list;
+							// app.company_list = res.page.list;
 							for (var i = 0; i < res.page.list.length; i++) {
 								if (res.page.list[i].currentStatus == 0) {
-									app.company_list[i].currentStatus = "未处理"
+									res.page.list[i].currentStatus = "未处理"
 								} else if (res.page.list[i].currentStatus == 1) {
-									app.company_list[i].currentStatus = "已处理未申报"
+									res.page.list[i].currentStatus = "已处理未申报"
 								} else if (res.page.list[i].currentStatus == 2) {
-									app.company_list[i].currentStatus = "已申报未审核"
+									res.page.list[i].currentStatus = "已申报未审核"
 								} else if (res.page.list[i].currentStatus == 3) {
-									app.company_list[i].currentStatus = "审核通过"
+									res.page.list[i].currentStatus = "审核通过"
 								} else if (res.page.list[i].currentStatus == 4) {
-									app.company_list[i].currentStatus = "审核未通过"
+									res.page.list[i].currentStatus = "审核未通过"
 								} else if (res.page.list[i].currentStatus == 5) {
-									app.company_list[i].currentStatus = "已处理（不需要申报)"
+									res.page.list[i].currentStatus = "已处理（不需要申报)"
 								}
+								app.company_list.push(res.page.list[i])
+							}
+							 //判断是否还有数据,若小于每次加载条数,结束
+							if(res.page.list.length < pageSize){
+								isOver = true;
+							}
+							//每次加载结束之后，如果还有数据则++
+							if(isOver == false){
+								pageStart++;
 							}
 							if (app.company_list.length == 0) {
 								app.All_length = 0
 							} else {
 								app.All_length = 1
-							}
+							}	
 						} else {
 							mui.toast(res.msg);
 						}
@@ -198,7 +232,6 @@
 
 				} else {
 					// 有网络
-					plus.nativeUI.showWaiting("数据加载中...");
 					app.isInternet = 1;
 					init();
 					getconmpany();
@@ -216,16 +249,13 @@
 
 
 			window.addEventListener("get_data", function(e) {
-				// console.log(JSON.stringify(e.detail.name));
-				// console.log(JSON.stringify(e.detail.date));
-				// console.log(JSON.stringify(e.detail.type));
-				// console.log(JSON.stringify(e.detail.end));
 				app.compamy= e.detail.name;
 				app.date = e.detail.date;
 				app.type = e.detail.type;
-				app.enddate = e.detail.end
-				getconmpany()
-
+				app.enddate = e.detail.end;
+				app.currentStatus = e.detail.currentStatus;
+				app.company_list = [];
+				getconmpany(1)
 			})
 		</script>
 	</body>

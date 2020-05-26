@@ -32,30 +32,6 @@
 					<button type="button" class="mui-btn mui-btn-outlined" id="morepick" style="margin-bottom: 20px;margin-right: 1.25rem;">参数切换</button>
 				</div>
 				<div style="width:100%;height: 200px;display: none;" id="more"></div>
-				<!-- <div id="item" style="display: none;">
-					<div class="banner flex">
-						<p>序号</p>
-						<p>时间</p>
-						<p>电流</p>
-					</div>
-					<div style="overflow: scroll;">
-						<div class="content flex">
-							<p>1</p>
-							<p>00:19</p>
-							<p>0.9</p>
-						</div>
-						<div class="content flex">
-							<p>1</p>
-							<p>00:19</p>
-							<p>0.9</p>
-						</div>
-						<div class="content flex">
-							<p>1</p>
-							<p>00:19</p>
-							<p>0.9</p>
-						</div>
-					</div>
-				</div> --> 
 			</div>
 			<div v-show="isInternet == 0">
 				<p class="tipword">没有网络了！可能是您的网络设置未开启</p>
@@ -200,7 +176,8 @@
 						text: '功率'
 					},
 					tooltip: {
-						trigger: 'axis'
+						trigger: 'axis',
+						position:['28%','30%']
 					},
 					grid: {
 						left: '3%',
@@ -228,7 +205,8 @@
 						text: '周期电量'
 					},
 					tooltip: {
-						trigger: 'axis'
+						trigger: 'axis',
+						position:['28%','30%']
 					},
 					grid: {
 						left: '3%',
@@ -257,7 +235,8 @@
 						text: app.morename 
 					},
 					tooltip: {
-						trigger: 'axis'
+						trigger: 'axis',
+						position:['28%','30%']
 					},
 					grid: {
 						left: '3%',
@@ -299,7 +278,7 @@
 					timeout: 10000, //超时时间设置为10秒；
 					success: function(res) {
 						plus.nativeUI.closeWaiting();
-						console.log(JSON.stringify(res));
+						// console.log(JSON.stringify(res));
 						if(res.code == 0){
 							if(res.data != ""){
 								for (let key in res.data.mapy) {
@@ -409,9 +388,7 @@
 							morecanshu();
 						}else{
 							mui.toast(res.mag)
-						}
-						
-						
+						}				
 					},
 					error:function(xhr,type,errorThrown){
 						
@@ -460,13 +437,7 @@
 					powers();
 					
 				}
-			}
-		
-		
-		
-		
-		
-		
+			}		
 		</script>
 	</body>
 

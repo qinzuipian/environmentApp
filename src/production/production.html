@@ -24,7 +24,7 @@
 			<p style="margin-top: 100px ; text-align: center;" v-show="All_length == 0 && isInternet == 1">暂无数据</p>
 			<div class="flex bars" v-show="All_length == 1 && isInternet == 1">
 				<p style="padding-left: 20px;">日期</p>
-				<p>目标符合(%)</p>
+				<p>目标负荷(%)</p>
 				<p>当天负荷(Kw.h)</p>
 				<p>是否违规</p>
 			</div>
@@ -139,14 +139,14 @@
 					data: {
 						startCreateDate: app.date,
 						endCreateDate: app.date,
-						limit: 1000000,
+						limit: 100000,
 						userId: localStorage.getItem("userId"),
 					},
 					dataType: 'json', //服务器返回json格式数据
 					type: 'post', //HTTP请求类型
 					timeout: 10000, //超时时间设置为10秒；
 					success: function(res) {
-						console.log(JSON.stringify(res));
+						// console.log(JSON.stringify(res));
 						if (res.code == 0) {
 							plus.nativeUI.closeWaiting();
 							app.company_list = res.page.list;
@@ -227,21 +227,19 @@
 			// })
 			
 			function getcoms() {
-				console.log("zhixing;");
 				// 到时候需要把时间    改成data
 				mui.ajax(JTURL + 'environmental_intelligent_monitoring/twrpimplementation/list', {
 					data: {
 						startCreateDate: app.startdate,
 						endCreateDate: app.enddate,
 						limit: 1000000,
-						userId: localStorage.getItem("userId"),
-						// startCreateDate: app.start_date,
-						// endCreateDate: app.end_date
+						userId: localStorage.getItem("userId")
 					},
 					dataType: 'json', //服务器返回json格式数据
 					type: 'post', //HTTP请求类型
 					timeout: 10000, //超时时间设置为10秒；
 					success: function(res) {
+						console.log(JSON.stringify(res))
 						if (res.code == 0) {
 							plus.nativeUI.closeWaiting();
 							app.company_list = res.page.list;

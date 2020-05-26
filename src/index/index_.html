@@ -13,7 +13,8 @@
 
 	<body>
 		<header class="mui-bar mui-bar-nav header-blue">
-			<h1 class="mui-title">首页</h1>
+			<h1 class="mui-title">首页[广宗县]</h1>
+			<!-- <h1 class="mui-title">首页[开发区]</h1> -->
 		</header>
 
 		<div id="app">
@@ -42,10 +43,10 @@
 					</div>
 					<div style="margin: 15px 0 ;">
 						<div class="flex num">
-							<p v-text="monitorNum">23</p>
+							<p v-text="monitorNum"></p>
 							<p>个</p>
 						</div>
-						<p>监测点数量</p>
+						<p>总进线</p>
 					</div>
 				</div>
 				<div class="enterpriseBar">
@@ -55,7 +56,7 @@
 					</div>
 
 					<div class="center">
-						<p>治污设施异常企业</p>
+						<p>设施异常情况</p>
 						<div class="flex y1">
 							<p>异常企业</p>
 							<div class="flex number">
@@ -67,7 +68,7 @@
 							<span></span>
 						</div>
 						<div class="flex y1">
-							<p>涉及治污设施</p>
+							<p>异常设施</p>
 							<div class="flex number">
 								<p v-text="treatAbnormalNum"></p>
 								<p>家</p>
@@ -253,12 +254,12 @@
 					type: 'post', //HTTP请求类型
 					timeout: 10000, //超时时间设置为10秒；
 					success: function(res) {
-						plus.nativeUI.closeWaiting();
 						// console.log(JSON.stringify(res));
 						if (res.code == 0) {
+							plus.nativeUI.closeWaiting();
 							for (var i = 0; i < res.enterpriseNum.length; i++) {
 								app.enterpriseNum = res.enterpriseNum[i].enterpriseNum;
-								app.monitorNum = res.enterpriseNum[i].productMonitorNum + res.enterpriseNum[i].treatMonitorNum;
+								app.monitorNum = res.enterpriseNum[i].monitorNum;
 								app.productMonitorNum = res.enterpriseNum[i].productMonitorNum
 								app.treatMonitorNum = res.enterpriseNum[i].treatMonitorNum
 							}
@@ -357,8 +358,6 @@
 							}
 							// enterprisechart();
 
-
-
 							//各区域企业占比
 							var totals
 							for (var i = 0; i < res.abnormalOrganizeNum.length; i++) {
@@ -370,9 +369,6 @@
 								app.abnormalNumlist.push(obj)
 								app.names.push(res.abnormalOrganizeNum[i].name);
 							}
-
-
-
 						}
 					},
 					error: function(xhr, type, errorThrown) {
@@ -479,11 +475,11 @@
 				types[plus.networkinfo.CONNECTION_WIFI] = "WiFi connection";
 
 				//wifi连接
+				plus.nativeUI.showWaiting("数据加载中...");
 				if (types[plus.networkinfo.getCurrentType()] == types[plus.networkinfo.CONNECTION_NONE] || types[plus.networkinfo
 						.getCurrentType()] ==
 					types[plus.networkinfo.CONNECTION_UNKNOW]) {
 					// 无网络
-					plus.nativeUI.showWaiting("数据加载中...");
 					setTimeout(function() {
 						plus.nativeUI.closeWaiting();
 						app.isInternet = 0
@@ -491,7 +487,6 @@
 
 				} else {
 					// 有网络
-					plus.nativeUI.showWaiting("数据加载中...");
 					app.isInternet = 1;
 					getindexInfo();
 
@@ -499,7 +494,6 @@
 			}
 
 			window.addEventListener("refresh", function() {
-				// console.log("index_刷新了");
 				indexs = plus.webview.getWebviewById("index_");
 				indexs.show();
 				var ws = plus.webview.currentWebview();
