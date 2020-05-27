@@ -70,45 +70,45 @@
 							bottom: '60px'
 						}
 					}
-				],
-				preloadPages: [ //预加载其他页面  
-					{
-						url: 'src/PollutionControl/pollutionControl.html',
-						id: 'pollutionControl',
-						styles: {
-							top: '0px',
-							bottom: '60px'
-						}
-					},
-					{
-						url: 'src/alarm/alarm.html',
-						id: 'alarm',
-						styles: {
-							top: '0px',
-							bottom: '60px'
-						}
-					},
-					{
-						url: 'src/production/production.html',
-						id: 'production',
-						styles: {
-							top: '0px',
-							bottom: '60px'
-						}
-					},
-					{
-						url: 'src/own/own.html',
-						id: 'own',
-						styles: {
-							top: '0px',
-							bottom: '60px'
-						}
-					}
 				]
+				// preloadPages: [ //预加载其他页面  
+				// 	{
+				// 		url: 'src/PollutionControl/pollutionControl.html',
+				// 		id: 'pollutionControl',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	},
+				// 	{
+				// 		url: 'src/alarm/alarm.html',
+				// 		id: 'alarm',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	},
+				// 	{
+				// 		url: 'src/production/production.html',
+				// 		id: 'production',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	},
+				// 	{
+				// 		url: 'src/own/own.html',
+				// 		id: 'own',
+				// 		styles: {
+				// 			top: '0px',
+				// 			bottom: '60px'
+				// 		}
+				// 	}
+				// ],
 			});
 
-			mui.plusReady(function() {})
-				/* mainPage1 = mui.preload({
+			mui.plusReady(function() {
+				mainPage1 = mui.preload({
 					url: 'src/PollutionControl/pollutionControl.html',
 					id: 'pollutionControl',
 					styles: {
@@ -140,7 +140,7 @@
 						top: '0px',
 						bottom: '60px'
 					}
-				}) */
+				})
 				var token = localStorage.getItem("token")
 				if (token == null) {
 					var login = plus.webview.create("./src/login/login.html")
@@ -150,6 +150,7 @@
 				}
 
 				var index, pollutionControl, alarm, production, own;
+
 				// 首页
 				mui("#nav").on("tap", "#index_", function() { //点击触发   
 					index = plus.webview.getWebviewById("index_");
@@ -166,6 +167,7 @@
 					if (own) {
 						own.hide()
 					}
+
 				}, {
 					passive: false
 				})
@@ -245,7 +247,9 @@
 				}, {
 					passive: false
 				})
-			
+			})
+
+
 
 			window.addEventListener("refresh", function() {
 				console.log("index_显示出来了");
@@ -253,7 +257,7 @@
 				index.show();
 				document.getElementById("index_").className = "mui-tab-item mui-active";
 				document.getElementById("own").className = "mui-tab-item";
-			/* 	if (mainPage1) {
+				if (mainPage1) {
 					mainPage1.hide()
 				}
 				if (mainPage2) {
@@ -264,7 +268,7 @@
 				}
 				if (mainPage4) {
 					mainPage4.hide()
-				} */
+				}
 			}, {
 				passive: false
 			})
