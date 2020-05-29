@@ -71,7 +71,7 @@
 							<p>异常设施</p>
 							<div class="flex number">
 								<p v-text="treatAbnormalNum"></p>
-								<p>家</p>
+								<p>处</p>
 							</div>
 						</div>
 						<div id="demo2" class="mui-progressbar">
@@ -314,7 +314,6 @@
 									type: 'category',
 									data: app.dayHour
 								},
-
 								grid: {
 									left: '1%',
 									right: '1%',
@@ -326,20 +325,34 @@
 									trigger: 'axis'
 								},
 								legend: {
-									left: 'left',
+									// left: 'left',
 									data: ['用电量', 'AQI']
 								},
-								yAxis: {
-									type: 'value'
-								},
+								yAxis: [{
+										name: '(kW·h)',
+										type: 'value',
+										// splitArea: {
+										// 	"show": true
+										// },
+										position: 'left',
+									},
+									{
+										type: 'value',
+										// splitArea: {
+										// 	"show": true
+										// },
+										position: 'right',
+									}],
 								series: [{
 									name:'用电量',
 									data: app.kwh,
-									type: 'line'
+									type: 'line',
+									yAxisIndex: 0
 								}, {
 									name:"AQI",
 									data: app.aqi,
-									type: 'line'
+									type: 'line',
+									yAxisIndex: 1,
 
 								}]
 

@@ -19,15 +19,14 @@
 			<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="padding-top: 3px;" id="searchFactor"></span> -->
 		</header>
 		<div id="app">
+			<div style="text-align: center;">
+				<el-autocomplete v-model="companyList" :fetch-suggestions="querySearchAsync" placeholder="请选择企业名称" @select="handleSelect"></el-autocomplete>
+			</div>
 			<div id="map" style="position: fixed;left: 0px;top: 0px;"></div>
 			<div id="_company" v-show="All_length == 1 && isInternet == 1">
 				<div class="flex" style="margin-left: 2.5%;">
 					<p class="mui-icon-map mui-icon icon"></p>
 					<p class="company_list">企业列表</p>
-				</div>
-				<div style="text-align: center;">
-					<el-autocomplete v-model="companyList" :fetch-suggestions="querySearchAsync" placeholder="请选择企业名称" @select="handleSelect"></el-autocomplete>
-					<!-- <span class="mui-icon mui-pull-right mui-icon-search" style="margin-right: 26%;" id="searchFactor"></span> -->
 				</div>
 				<div class="company" v-for="(it,index) in company" @click="searchCom(it)">
 					<div class="title flex" style="justify-content: space-between;">
@@ -66,7 +65,7 @@
 					</div>
 					<div class="flex" style="justify-content: flex-end;">
 						<button type="button" class="mui-btn mui-btn-outlined" @click="pollutuionMonitor(it)">设施监控</button>
-						<button type="button" class="mui-btn mui-btn-outlined" @click="monitor(it)">企业监控</button>
+						<!-- <button type="button" class="mui-btn mui-btn-outlined" @click="monitor(it)">企业监控</button> -->
 					</div>
 				</div>
 			</div>
@@ -137,7 +136,7 @@
 						var point = new BMap.Point(it.longitude, it.latitude);
 						// map.centerAndZoom(point, 16);
 					},
-					//产污设施监控
+					//设施监控
 					pollutuionMonitor: function(it) {
 						event.stopPropagation();
 						var pollutuionMonitor = plus.webview.create("./pollutionMonitor.html", "pollutionMonitor", {}, {
@@ -226,24 +225,24 @@
 					timeout: 10000, //超时时间设置为10秒；
 					success: function(res) {
 						plus.nativeUI.closeWaiting();
-						// console.log(JSON.stringify(res));
+						console.log(JSON.stringify(res));
 						if (res.code == 0) {
 							if (res.data.children != "") {
 								for (var i = 0; i < res.data.children.length; i++) {
-									var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
+								/* 	var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
 										allmonitorid: res.data.children[i].id,
 										conpanyid: res.data.id
 									});
-									plus.webview.show(monitor, "slide-in-right", 300);
-									// if (res.data.children[i].type == "t_device_monitor_all") {
-									// 	var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
-									// 		allmonitorid: res.data.children[i].id,
-									// 		conpanyid: res.data.id
-									// 	});
-									// 	plus.webview.show(monitor, "slide-in-right", 300);
-									// } else if (res.data.children[i].type != "t_device_monitor_all") {
-									// 	mui.toast("该企业暂无企业数据")
-									// }
+									plus.webview.show(monitor, "slide-in-right", 300); */
+									if (res.data.children[i].type == "t_device_monitor_all") {
+										var monitor = plus.webview.create("./monitor.html", "monitor", {}, {
+											allmonitorid: res.data.children[i].id,
+											conpanyid: res.data.id
+										});
+										plus.webview.show(monitor, "slide-in-right", 300);
+									} else if (res.data.children[i].type != "t_device_monitor_all") {
+										mui.toast("该企业暂无企业数据")
+									}
 								}
 							} else if (res.data.children == "") {
 								mui.toast("该企业暂无企业数据")

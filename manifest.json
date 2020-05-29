@@ -1,7 +1,7 @@
 {
     "@platforms" : [ "android", "iPhone", "iPad" ],
     "id" : "H5B11DCB4", /*应用的标识，创建应用时自动生成，勿手动修改*/
-    "name" : "环保云", /*应用名称，程序桌面图标名称*/
+    "name" : "开发区环保云", /*应用名称，程序桌面图标名称*/
     "version" : {
         "name" : "4.0.0", /*应用版本名称*/
         "code" : 100
@@ -230,5 +230,6 @@
                 "README.md"
             ]
         }
-    }
+    },
+    "screenOrientation" : [ "portrait-primary", "portrait-secondary" ]
 }
